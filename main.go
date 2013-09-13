@@ -1,12 +1,122 @@
 package main
 
 import (
-//	"github.com/raguay/goAlfred"
+	"github.com/raguay/goAlfred"
+	"bufio"
 	"log"
-//	"os"
+	"os"
+	"fmt"
+	"code.google.com/p/goplan9/plan9"
+	"code.google.com/p/goplan9/plan9/client"
+	"strconv"
 )
 
-func main() {
-	log.Print("hello world\n")
+type WinEntry struct {
+	Id uint
+	Taglen uint
+	Bodylen uint
+	Isdir bool
+	Ismod bool
+	Filename string	
+	Tag string	
 }
 
+func main() {
+
+	// TODO(rjkroege): note that we need to do this based on the argument... 
+	// eventually we'll have a buffer specified...
+	// but I should probably always check that the buffer is in the index
+	// TODO(rjkroege): worry about the error handling.
+	fsys, err := client.MountService("acme")
+	if err != nil {
+		log.Fatal("can't attach to the acme: " + err.Error())
+	}
+
+	fid, err := fsys.Open("index", plan9.OREAD)
+	if err != nil {
+		log.Fatal("can't open the index file: " + err.Error())
+	}
+
+	token_count := 0	
+	split := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		switch {
+		case token_count < 6:
+			advance, token, err = bufio.ScanWords(data, atEOF)
+			token_count++
+		case token_count == 6:
+			advance, token, err = bufio.ScanLines(data, atEOF)
+			token_count = 0;	
+		}		
+            return				
+	}
+
+	wins := make([]*WinEntry,0, 10)		
+	scanner := bufio.NewScanner(fid)
+	scanner.Split(split)
+
+	for a := make([]string, 0, 7); scanner.Scan(); {
+		a = append(a, scanner.Text())
+		if len(a) == 7 {
+			ip := make([]uint, 5, 5)
+			for i:= 0; i < 5; i++ {
+				p, _ := strconv.ParseUint(a[i], 10, 32)
+				ip[i] = uint(p)
+			}
+			wins = append(wins, &WinEntry{ip[0], ip[1], ip[2], ip[3] == 1, ip[4] == 1, a[5], a[6]})
+			a = make([]string, 0, 7)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+	// Output...
+//	for _, w := range(wins) {
+//		log.Print(w)
+//	}
+
+	/*
+		How does this all work anyway. 
+		Search order...
+
+		a search always begins with a file name. or : if to use the current file. We don't know the current file. It
+		would be nice to figure out the current file. I don't think that acme will tell me where the cursor is...
+
+	*/
+
+
+	for i, w := range(wins) {
+		goAlfred.AddResult(strconv.FormatInt(int64(i), 10), w.Filename, w.Filename, w.Filename, "icon.png", "yes", "", "")
+	}
+
+	
+/*
+	// original example code
+	if(len(os.Args) > 1) {
+		switch (os.Args[1]) {
+			case "1": 
+				goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
+				goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+				goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+			case "2":	
+				goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+				goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
+				goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+			case "3":
+				goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+				goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
+				goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+
+		}
+	} else {
+		goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+		goAlfred.AddResult("testUID", "test argument", "This is my title", "test substring", "icon.png", "yes", "", "")
+		goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")		
+	}
+*/
+
+	//
+	// Print out the created XML. 
+	//
+	fmt.Print(goAlfred.ToXML())
+}
