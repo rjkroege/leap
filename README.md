@@ -164,6 +164,19 @@ How do I sort these together?
 I should order alphabetically. I should bound the number included in display with
 an ellipsis if the count of that block exceeds a threshold. I can start with just a list?
 
+Observation: a regular expression works pretty well here. No particular fanciness needed.
+I can be more clever like I suppose if I really want.
+
+Follow On Tasks
+===
+
+*  <strike>extract the list of filenames</strike>
+*  <strike>elide the start of the names so that they fit better</strike>
+*  <strike>convert the typed stuff into regexp </strike>
+*  <strike<apply the regexp to the list of filenames</strike>
+*  figure out the additional keys *what does this mean?*
+*  package this up in some kind of rational way: we need the opener now.
+
 
 
 

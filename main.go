@@ -1,16 +1,20 @@
 package main
 
 import (
-	"github.com/raguay/goAlfred"
 	"bufio"
-	"log"
-	"os"
-	"fmt"
 	"code.google.com/p/goplan9/plan9"
 	"code.google.com/p/goplan9/plan9/client"
+	"fmt"
+	"github.com/raguay/goAlfred"
+	"log"
+	"os"
+	"regexp"
 	"strconv"
+	"unicode/utf8"
 )
 
+
+// Keek pristine with goal of upstreaming.
 type WinEntry struct {
 	Id uint
 	Taglen uint
@@ -20,6 +24,44 @@ type WinEntry struct {
 	Filename string	
 	Tag string	
 }
+
+const maxCharactersInName = 65
+
+/*
+	Tacky elision. Might want to do something nicer. Like strip the common prefixes.
+*/
+func ElidedFileName(n string) string {
+	if len(n) > maxCharactersInName {
+		return "..." + n[len(n) - maxCharactersInName:]
+	}
+	return n
+}
+
+// rip icons out of the peepcode app?
+//func PickIcon(n string) string {
+//}
+
+func MakeRegexp(s string, prefix string, suffix string) (*regexp.Regexp, error) {
+	b := make([]byte, 0, len(s) * 4);
+	for i, r := range(s) {
+		b = append(b, prefix...)
+		b = append(b, s[i:i+utf8.RuneLen(r)]...)
+		b = append(b, suffix...)
+		// b = append(b, "[^/]*"...)
+	}
+	log.Println(string(b))
+	return regexp.Compile(string(b))
+}
+
+
+/*
+	Adds an entry to the Alfred results.
+*/
+func AddResultEntry(i int, w *WinEntry) {
+	
+	goAlfred.AddResult(strconv.FormatInt(int64(i), 10), w.Filename, ElidedFileName(w.Filename), w.Filename, "icon.png", "yes", "", "")
+}
+
 
 func main() {
 
@@ -85,11 +127,39 @@ func main() {
 	*/
 
 
-	for i, w := range(wins) {
-		goAlfred.AddResult(strconv.FormatInt(int64(i), 10), w.Filename, w.Filename, w.Filename, "icon.png", "yes", "", "")
-	}
 
-	
+	// What about spaces? I can use this for something? Why don't I just smush the arguments together?
+	if len(os.Args) > 1 {
+		// Could loop over the regexps.
+		rep, err  := MakeRegexp(os.Args[1], "", "[^/]*")
+		if err != nil {
+			log.Print("MakeRegexp, exact: ", err.Error())
+		}
+		ref, err  := MakeRegexp(os.Args[1], "", ".*")
+		if err != nil {
+			log.Print("MakeRegexp, exact: ", err.Error())
+		}
+
+		for i, w := range(wins) {
+			log.Println("regexp testing: " + w.Filename)
+			if rep.MatchString(w.Filename) {
+				log.Println("regexp matched: " + w.Filename)
+				AddResultEntry(i, w)
+			}
+		}
+
+		// no need to list fid again right?
+
+		for i, w := range(wins) {
+			log.Println("regexp testing: " + w.Filename)
+			if ref.MatchString(w.Filename) {
+				log.Println("regexp matched: " + w.Filename)
+				AddResultEntry(i, w)
+			}
+		}
+	} 
+
+
 /*
 	// original example code
 	if(len(os.Args) > 1) {
