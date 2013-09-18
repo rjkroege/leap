@@ -170,15 +170,23 @@ I can be more clever like I suppose if I really want.
 Follow On Tasks
 ===
 
+Phase 1
+-----
+
 *  <strike>extract the list of filenames</strike>
 *  <strike>elide the start of the names so that they fit better</strike>
 *  <strike>convert the typed stuff into regexp </strike>
-*  <strike<apply the regexp to the list of filenames</strike>
-*  figure out the additional keys *what does this mean?* This means: understand how to use the other fields in the XML that gets shipped to Alfred.
-*  package this up in some kind of rational way: we need the opener now.
+*  <strike>apply the regexp to the list of filenames</strike>
+*  <strike>don't add an entry twice if matched multiple times by different regexps</strike>
 *  add icons to the result
+*  package this up in some kind of rational way: we need the file opening
+*  figure out the additional keys *what does this mean?* This means: understand how to use the other fields in the XML that gets shipped to Alfred.
 *  support auto-complete | enter doing something different.
-*  don't add an entry twice if matched multiple times by different regexps
+
+
+Phase 2
+----
+
 *  take better advantage of `/` characters to improve matching (will need to refine this)
 *  re-write this document pending upstreaming
 *  upstream this content
@@ -196,7 +204,6 @@ to finish phase 1 first.
 
 Please resort the above based on what's in phase 1 or phase 2. And minimize the
 work imposed.
-
 
 
 

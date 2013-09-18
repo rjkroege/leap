@@ -56,10 +56,14 @@ func MakeRegexp(s string, prefix string, suffix string) (*regexp.Regexp, error) 
 
 /*
 	Adds an entry to the Alfred results.
+	Does this need to take WinEntry or are file names sufficient?
 */
-func AddResultEntry(i int, w *WinEntry) {
-	
-	goAlfred.AddResult(strconv.FormatInt(int64(i), 10), w.Filename, ElidedFileName(w.Filename), w.Filename, "icon.png", "yes", "", "")
+func AddResultEntry(i int, w *WinEntry, set map[string]bool) {
+	_, ok := set[w.Filename]
+	if !ok {
+		set[w.Filename] = true
+		goAlfred.AddResult(strconv.FormatInt(int64(i), 10), w.Filename, ElidedFileName(w.Filename), w.Filename, "icon.png", "yes", "", "")
+	}
 }
 
 
@@ -140,11 +144,14 @@ func main() {
 			log.Print("MakeRegexp, exact: ", err.Error())
 		}
 
+
+		set := make(map[string]bool)
+		
 		for i, w := range(wins) {
 			log.Println("regexp testing: " + w.Filename)
 			if rep.MatchString(w.Filename) {
 				log.Println("regexp matched: " + w.Filename)
-				AddResultEntry(i, w)
+				AddResultEntry(i, w, set)
 			}
 		}
 
@@ -154,7 +161,7 @@ func main() {
 			log.Println("regexp testing: " + w.Filename)
 			if ref.MatchString(w.Filename) {
 				log.Println("regexp matched: " + w.Filename)
-				AddResultEntry(i, w)
+				AddResultEntry(i, w, set)
 			}
 		}
 	} 
