@@ -61,7 +61,7 @@ Tasks
 *  <strike>Read the Acme index file from the command line</strike>
 * <strke>Parse Acme index file</strike>
 * Propose acme index file reading as change to rsc
-*  Replace the list of entries with the acme index files
+*  <strike>Replace the list of entries with the acme index files</strike>
 
 
 Issues
@@ -174,11 +174,28 @@ Follow On Tasks
 *  <strike>elide the start of the names so that they fit better</strike>
 *  <strike>convert the typed stuff into regexp </strike>
 *  <strike<apply the regexp to the list of filenames</strike>
-*  figure out the additional keys *what does this mean?*
+*  figure out the additional keys *what does this mean?* This means: understand how to use the other fields in the XML that gets shipped to Alfred.
 *  package this up in some kind of rational way: we need the opener now.
+*  add icons to the result
+*  support auto-complete | enter doing something different.
+*  don't add an entry twice if matched multiple times by different regexps
+*  take better advantage of `/` characters to improve matching (will need to refine this)
+*  re-write this document pending upstreaming
+*  upstream this content
+*  refactor the code to be nicer: there is a pipeline here
+	*  Get acme index data
+	*  Get file matches data (I want an interface for fetching)
+	*  Search acme index data and create intermediate type for matches
+	*  Search file data and create intermediate type for matches
+	*  Merge all intermediate type entries together, sort and de-duplicate
+	*  Append additional properties to intermediate type
+	*  Generate Alfred output from intermediate type
 
+Please remember that phase 2 (file matching) is not part of this exercise. I need
+to finish phase 1 first.
 
-
+Please resort the above based on what's in phase 1 or phase 2. And minimize the
+work imposed.
 
 
 
