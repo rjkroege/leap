@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>leap.liqui.org</string>
+	<key>connections</key>
+	<dict>
+		<key>125ED864-D67A-489A-BE99-85E356DA4D23</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>8AA02B81-C556-4B43-B1B7-DBA8DD877812</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>8AA02B81-C556-4B43-B1B7-DBA8DD877812</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>26172CD0-3CD7-4796-AB80-F701C4D51322</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Robert Kroeger</string>
+	<key>description</key>
+	<string>Use Alfred to search through current Acmes</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Leap</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>escaping</key>
+				<integer>127</integer>
+				<key>script</key>
+				<string>echo "hi there"
+echo "{query}"
+echo "bye"
+
+</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>8AA02B81-C556-4B43-B1B7-DBA8DD877812</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>output</key>
+				<integer>0</integer>
+				<key>removeextension</key>
+				<false/>
+				<key>sticky</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Leap output</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>26172CD0-3CD7-4796-AB80-F701C4D51322</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>escaping</key>
+				<integer>127</integer>
+				<key>keyword</key>
+				<string>leap</string>
+				<key>script</key>
+				<string>/usr/local/bin/leap {query}</string>
+				<key>subtext</key>
+				<string>Search in Acme</string>
+				<key>title</key>
+				<string>Leap</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>125ED864-D67A-489A-BE99-85E356DA4D23</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string></string>
+	<key>uidata</key>
+	<dict>
+		<key>125ED864-D67A-489A-BE99-85E356DA4D23</key>
+		<dict>
+			<key>ypos</key>
+			<real>10</real>
+		</dict>
+		<key>26172CD0-3CD7-4796-AB80-F701C4D51322</key>
+		<dict>
+			<key>ypos</key>
+			<real>10</real>
+		</dict>
+		<key>8AA02B81-C556-4B43-B1B7-DBA8DD877812</key>
+		<dict>
+			<key>ypos</key>
+			<real>10</real>
+		</dict>
+	</dict>
+	<key>webaddress</key>
+	<string>http://www.liqui.org</string>
+</dict>
+</plist>

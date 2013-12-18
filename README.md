@@ -66,39 +66,44 @@ Tasks
 
 Issues
 ====
-I'm perplexed: what happens when we actually hit enter... What does that
-program get? In particular, I need to do stuff to Acme then. And that means
-that I need to know which option the user actually chose. Right? Some of my
-existing workflows (pinboard search for example) resolve this.
+I'm perplexed: what happens when we actually hit enter... What does
+that program get? In particular, I need to do stuff to Acme then. And
+that means that I need to know which option the user actually chose.
+Right? Some of my existing workflows (pinboard search for example)
+resolve this.
 
-I'm going to need another command. It's not clear what it gets as arguments.
-But something from the first command. And I wish that Alfred supported styling
-the strings somehow.
+I'm going to need another command. It's not clear what it gets as
+arguments. But something from the first command. And I wish that
+Alfred supported styling the strings somehow.
 
-Aside: maybe it does. You have no idea what they do with the strings that I return.
-I can try various things. Like returning an HTML string and see what happens.
+Aside: maybe it does. You have no idea what they do with the strings
+that I return. I can try various things. Like returning an HTML string
+and see what happens.
 
-Indeed. There are two different commands. The picker component and the doer.
-Let's accept that there will be two different commands. Which means what exactly?
+Indeed. There are two different commands. The picker component and the
+doer. Let's accept that there will be two different commands. Which
+means what exactly?
 
-I note in passing that the search examples will warp the cursor and enlarge the window
-if I make the *opener* program use the `plumb` interface. If and only if we are using
-a file. No. See `addr`, `dot=addr` and `show`. It can be coerced easily.
+I note in passing that the search examples will warp the cursor and
+enlarge the window if I make the *opener* program use the `plumb`
+interface. If and only if we are using a file. No. See `addr`,
+`dot=addr` and `show`. It can be coerced easily.
 
 Future
 ===
-I have read about [commad-T](https://wincent.com/products/command-t). This is
-where I want to go. And how I want to search for files. Imagine the following:
+I have read about [commad-T](https://wincent.com/products/command-t).
+This is where I want to go. And how I want to search for files.
+Imagine the following:
 
 *  I have a *current project* which is the root of the tree being considered for
 searching.
 *  I type a string of letters. It can be broken down into substrings. We return a 
 list of matching entities. Open windows can be folded into this with a different
 icon.
-*  The algorithm would appear to be a bit subtle. Which is cool. Yay. Given a string,
-each substring could match differently. And then we need to merge the matches
-together and prune the result. I need to refine this further. Sounds like an inverted
-index to me.
+* The algorithm would appear to be a bit subtle. Which is cool. Yay.
+Given a string, each substring could match differently. And then we
+need to merge the matches together and prune the result. I need to
+refine this further. Sounds like an inverted index to me.
 
 Approach
 ----
