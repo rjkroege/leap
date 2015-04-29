@@ -13,16 +13,15 @@ import (
 	"unicode/utf8"
 )
 
-
 // Keek pristine with goal of upstreaming.
 type WinEntry struct {
-	Id uint
-	Taglen uint
-	Bodylen uint
-	Isdir bool
-	Ismod bool
-	Filename string	
-	Tag string	
+	Id       uint
+	Taglen   uint
+	Bodylen  uint
+	Isdir    bool
+	Ismod    bool
+	Filename string
+	Tag      string
 }
 
 const maxCharactersInName = 65
@@ -32,7 +31,7 @@ const maxCharactersInName = 65
 */
 func ElidedFileName(n string) string {
 	if len(n) > maxCharactersInName {
-		return "..." + n[len(n) - maxCharactersInName:]
+		return "..." + n[len(n)-maxCharactersInName:]
 	}
 	return n
 }
@@ -42,8 +41,8 @@ func ElidedFileName(n string) string {
 //}
 
 func MakeRegexp(s string, prefix string, suffix string) (*regexp.Regexp, error) {
-	b := make([]byte, 0, len(s) * 4);
-	for i, r := range(s) {
+	b := make([]byte, 0, len(s)*4)
+	for i, r := range s {
 		b = append(b, prefix...)
 		b = append(b, s[i:i+utf8.RuneLen(r)]...)
 		b = append(b, suffix...)
@@ -52,7 +51,6 @@ func MakeRegexp(s string, prefix string, suffix string) (*regexp.Regexp, error) 
 	log.Println(string(b))
 	return regexp.Compile(string(b))
 }
-
 
 /*
 	Adds an entry to the Alfred results.
@@ -66,10 +64,9 @@ func AddResultEntry(i int, w *WinEntry, set map[string]bool) {
 	}
 }
 
-
 func main() {
 
-	// TODO(rjkroege): note that we need to do this based on the argument... 
+	// TODO(rjkroege): note that we need to do this based on the argument...
 	// eventually we'll have a buffer specified...
 	// but I should probably always check that the buffer is in the index
 	// TODO(rjkroege): worry about the error handling.
@@ -83,7 +80,7 @@ func main() {
 		log.Fatal("can't open the index file: " + err.Error())
 	}
 
-	token_count := 0	
+	token_count := 0
 	split := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		switch {
 		case token_count < 6:
@@ -91,12 +88,12 @@ func main() {
 			token_count++
 		case token_count == 6:
 			advance, token, err = bufio.ScanLines(data, atEOF)
-			token_count = 0;	
-		}		
-            return				
+			token_count = 0
+		}
+		return
 	}
 
-	wins := make([]*WinEntry,0, 10)		
+	wins := make([]*WinEntry, 0, 10)
 	scanner := bufio.NewScanner(fid)
 	scanner.Split(split)
 
@@ -104,7 +101,7 @@ func main() {
 		a = append(a, scanner.Text())
 		if len(a) == 7 {
 			ip := make([]uint, 5, 5)
-			for i:= 0; i < 5; i++ {
+			for i := 0; i < 5; i++ {
 				p, _ := strconv.ParseUint(a[i], 10, 32)
 				ip[i] = uint(p)
 			}
@@ -117,12 +114,12 @@ func main() {
 	}
 
 	// Output...
-//	for _, w := range(wins) {
-//		log.Print(w)
-//	}
+	//	for _, w := range(wins) {
+	//		log.Print(w)
+	//	}
 
 	/*
-		How does this all work anyway. 
+		How does this all work anyway.
 		Search order...
 
 		a search always begins with a file name. or : if to use the current file. We don't know the current file. It
@@ -130,24 +127,21 @@ func main() {
 
 	*/
 
-
-
 	// What about spaces? I can use this for something? Why don't I just smush the arguments together?
 	if len(os.Args) > 1 {
 		// Could loop over the regexps.
-		rep, err  := MakeRegexp(os.Args[1], "", "[^/]*")
+		rep, err := MakeRegexp(os.Args[1], "", "[^/]*")
 		if err != nil {
 			log.Print("MakeRegexp, exact: ", err.Error())
 		}
-		ref, err  := MakeRegexp(os.Args[1], "", ".*")
+		ref, err := MakeRegexp(os.Args[1], "", ".*")
 		if err != nil {
 			log.Print("MakeRegexp, exact: ", err.Error())
 		}
-
 
 		set := make(map[string]bool)
-		
-		for i, w := range(wins) {
+
+		for i, w := range wins {
 			log.Println("regexp testing: " + w.Filename)
 			if rep.MatchString(w.Filename) {
 				log.Println("regexp matched: " + w.Filename)
@@ -157,43 +151,42 @@ func main() {
 
 		// no need to list fid again right?
 
-		for i, w := range(wins) {
+		for i, w := range wins {
 			log.Println("regexp testing: " + w.Filename)
 			if ref.MatchString(w.Filename) {
 				log.Println("regexp matched: " + w.Filename)
 				AddResultEntry(i, w, set)
 			}
 		}
-	} 
-
-
-/*
-	// original example code
-	if(len(os.Args) > 1) {
-		switch (os.Args[1]) {
-			case "1": 
-				goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
-				goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
-				goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
-			case "2":	
-				goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
-				goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
-				goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
-			case "3":
-				goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
-				goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
-				goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
-
-		}
-	} else {
-		goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
-		goAlfred.AddResult("testUID", "test argument", "This is my title", "test substring", "icon.png", "yes", "", "")
-		goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")		
 	}
-*/
+
+	/*
+		// original example code
+		if(len(os.Args) > 1) {
+			switch (os.Args[1]) {
+				case "1":
+					goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
+					goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+					goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+				case "2":
+					goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+					goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
+					goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+				case "3":
+					goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+					goAlfred.AddResult("testUID1", "test argument1", "This is my title1", "test substring1", "icon.png", "yes", "", "")
+					goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+
+			}
+		} else {
+			goAlfred.AddResult("testUID3", "test argument3", "This is my title3", "test substring3", "icon.png", "yes", "", "")
+			goAlfred.AddResult("testUID", "test argument", "This is my title", "test substring", "icon.png", "yes", "", "")
+			goAlfred.AddResult("testUID2", "test argument2", "This is my title2", "test substring2", "icon.png", "yes", "", "")
+		}
+	*/
 
 	//
-	// Print out the created XML. 
+	// Print out the created XML.
 	//
 	fmt.Print(goAlfred.ToXML())
 }
