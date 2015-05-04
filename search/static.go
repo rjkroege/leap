@@ -2,6 +2,7 @@ package search
 
 import (
 	"log"
+	"strings"
 
 	"github.com/rjkroege/leap/output"
 )
@@ -38,5 +39,15 @@ func NewStaticGenerator() output.Generator {
 
 func (sg staticGenerator) Query(s string) ([]output.Entry, error) {
 	log.Printf("query: %s", s)
-	return sg, nil	
+
+	// basic approach: prefix match
+	result := make([]output.Entry, 0)
+	
+	for _, e := range(sg) {
+		if strings.HasPrefix(e.Title, s) {
+			result = append(result, e)
+		}
+	}
+
+	return result, nil	
 }

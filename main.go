@@ -27,12 +27,8 @@ func main() {
 
 	log.Printf("hi there %d, %v", *ip, flag.Arg(0))
 	
-
 	gen := search.NewStaticGenerator()
-
-	// Need to read from the command line.
-	entries, _ := gen.Query("hi")
-
+	entries, _ := gen.Query(flag.Arg(0))
 	output.WriteOut(os.Stdout, entries)
 }
 
