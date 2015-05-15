@@ -33,10 +33,21 @@ func NewStaticGenerator() output.Generator {
 				Filename: "bling.png",
 			},
 		},
+		output.Entry{
+			Uid: "foo3",
+			Arg: "/Users/rjkroege/tools/gopkg/src/github.com/rjkroege/leap/main.go",
+			Type: "type3"	,
+			Title: "Another Different Title",
+			SubTitle: "a source file",
+			Icon: output.AlfredIcon{
+				Filename: "bling.png",
+			},
+			Valid: "YES",
+		},
 	})
 }
 
-
+// Presumption is that s is a query. So is probably a regexp.
 func (sg staticGenerator) Query(s string) ([]output.Entry, error) {
 	log.Printf("query: %s", s)
 
