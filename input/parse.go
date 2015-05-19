@@ -37,10 +37,18 @@ func symbolExp(s string) string {
 	return "(func|type|var|const).*" + strings.Join(ex, "[a-zA-Z_0-9]*") + "[a-zA-Z_0-9]*"
 }
 
-
-// func Parse(s string) (string, string, string) {
-//}
-
+func Parse(s string) (string, string, string) {
+	prefix, sep, suffix := chunkInputs(s)
+	switch sep {
+	case "@":
+		return fileExp(prefix), "/", symbolExp(suffix)
+	case "#", ":":
+		return fileExp(prefix), ":", numCheck(suffix)
+	case "/":
+		return fileExp(prefix), "/", fileExp(suffix)
+	}
+	return "", "", ""
+}
 
 func numCheck(s string) string {
 	_, err := strconv.Atoi(s)
