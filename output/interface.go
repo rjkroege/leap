@@ -30,7 +30,7 @@ type Generator interface {
 	// Query searches an object of type Entries for the given
 	// string s and returns a slice of Entries or an error if something
 	// has gone badly wrong.
-	Query(s string) ([]Entry, error)
+	Query(fn, qtype, suffix string) ([]Entry, error)
 }
 
 type items struct {

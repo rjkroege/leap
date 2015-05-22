@@ -48,7 +48,8 @@ func NewStaticGenerator() output.Generator {
 }
 
 // Presumption is that s is a query. So is probably a regexp.
-func (sg staticGenerator) Query(s string) ([]output.Entry, error) {
+func (sg staticGenerator) Query(fn, qtype, suffix string) ([]output.Entry, error) {
+	s := fn
 	log.Printf("query: %s", s)
 
 	// basic approach: prefix match
