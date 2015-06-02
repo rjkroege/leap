@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/rjkroege/leap/input"
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 )
@@ -45,10 +46,15 @@ func main() {
 	}
 
 	log.Printf("hi there %d, %v", *ip, flag.Arg(0))
+
+	fn, stype, _ := input.Parse(flag.Arg(0))
+
+	log.Println("parse out", fn, stype)
+
 	
 	// gen := search.NewStaticGenerator()
 	gen := search.NewFileNameSearch()
-	entries, _ := gen.Query(flag.Arg(0), "", "")
+	entries, _ := gen.Query(fn, "", "")
 	output.WriteOut(os.Stdout, entries)
 }
 

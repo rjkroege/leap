@@ -38,7 +38,7 @@ func symbolExp(s string) string {
 }
 
 func Parse(s string) (string, string, string) {
-	prefix, sep, suffix := chunkInputs(s)
+	prefix, sep, suffix := chunkInput(s)
 	switch sep {
 	case "@":
 		return fileExp(prefix), "/", symbolExp(suffix)
@@ -46,6 +46,8 @@ func Parse(s string) (string, string, string) {
 		return fileExp(prefix), ":", numCheck(suffix)
 	case "/":
 		return fileExp(prefix), "/", fileExp(suffix)
+	case "":
+		return fileExp(prefix), ":", ""
 	}
 	return "", "", ""
 }
