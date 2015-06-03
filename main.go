@@ -47,14 +47,16 @@ func main() {
 
 	log.Printf("hi there %d, %v", *ip, flag.Arg(0))
 
-	fn, stype, _ := input.Parse(flag.Arg(0))
+	fn, stype, suffix := input.Parse(flag.Arg(0))
 
 	log.Println("parse out", fn, stype)
 
 	
 	// gen := search.NewStaticGenerator()
 	gen := search.NewFileNameSearch()
-	entries, _ := gen.Query(fn, "", "")
+
+	// TODO(rjk): error check
+	entries, _ := gen.Query(fn, stype, suffix)
 	output.WriteOut(os.Stdout, entries)
 }
 

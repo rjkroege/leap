@@ -19,7 +19,8 @@ func NewFileNameSearch() output.Generator {
 	return &filenameSearch{ *index.Open(index.File()) }
 }
 
-// Chops off the 
+// Chops off the prefix. Fails if any one path is a prefix
+// of another path. But that's silly.
 func (ix *filenameSearch) trimmer(fs string) string {
 
 	for _, p := range ix.Paths() {
@@ -28,7 +29,21 @@ func (ix *filenameSearch) trimmer(fs string) string {
 	return fs
 }
 
+func extend(base, suffix string) string {
+	if suffix != "" {
+		return base + ":" + suffix
+	}
+	return base
+}
+
+
 func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {
+	// Don't know how to deal with other types other than line-no mode.
+	log.Printf("Query: %#v", qtype)
+	if qtype != ":" {
+		return nil, nil
+	}
+
 	//	compile the regexp
 	log.Println("fn", fn)
 	fre, err := regexp.Compile(fn)
@@ -62,9 +77,9 @@ func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error
 		
 		oo = append(oo, output.Entry{
 			Uid: name,
-			Arg: name,
-			Title: title,
-			SubTitle:	ix.trimmer(name),
+			Arg: extend(name, suffix),
+			Title: extend(title, suffix),
+			SubTitle:	extend(ix.trimmer(name), suffix),
 
 			Type: "file",
 			Icon: output.AlfredIcon{
