@@ -19,6 +19,15 @@ func NewFileNameSearch() output.Generator {
 	return &filenameSearch{ *index.Open(index.File()) }
 }
 
+// Chops off the 
+func (ix *filenameSearch) trimmer(fs string) string {
+
+	for _, p := range ix.Paths() {
+		fs = strings.TrimPrefix(fs, p)
+	}
+	return fs
+}
+
 func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {
 	//	compile the regexp
 	log.Println("fn", fn)
@@ -26,7 +35,6 @@ func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error
 	if err != nil {
 		return nil, err
 	}
-
 
 	// allQuery inspired by example in Russ's code.
 	allQuery := &index.Query{Op: index.QAll}
@@ -36,9 +44,7 @@ func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error
 
 	for _, fileid := range post {
 		name := ix.Name(fileid)
-
-		// TODO(rjk): Use the actual prefix here.
-		sname := strings.TrimPrefix(name,"/Users/rjkroege/tools/gopkg/src")
+		sname := ix.trimmer(name)
 
 		if fre.MatchString(sname, true, true) < 0 {
 			continue
@@ -51,7 +57,6 @@ func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error
 	oo := make([]output.Entry,0, 20)
 
 	for i := 0; i < 20 && i < len(fnames); i++ {
-		// TODO(rjk): build up the objects...
 		name := ix.Name(fnames[i])
 		title := filepath.Base(name)
 		
@@ -59,7 +64,7 @@ func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error
 			Uid: name,
 			Arg: name,
 			Title: title,
-			SubTitle:	strings.TrimPrefix(name, "/Users/rjkroege/tools/gopkg/src"),
+			SubTitle:	ix.trimmer(name),
 
 			Type: "file",
 			Icon: output.AlfredIcon{
