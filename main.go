@@ -53,7 +53,7 @@ func main() {
 
 	
 	// gen := search.NewStaticGenerator()
-	gen := search.NewFileNameSearch()
+	gen := search.NewTrigramSearch()
 
 	// TODO(rjk): error check
 	entries, _ := gen.Query(fn, stype, suffix)

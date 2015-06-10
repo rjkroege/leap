@@ -11,17 +11,9 @@ import (
 	"github.com/rjkroege/leap/output"
 )
 
-type filenameSearch struct {
-	index.Index
-}
-
-func NewFileNameSearch() output.Generator {
-	return &filenameSearch{ *index.Open(index.File()) }
-}
-
 // Chops off the prefix. Fails if any one path is a prefix
 // of another path. But that's silly.
-func (ix *filenameSearch) trimmer(fs string) string {
+func (ix *trigramSearch) trimmer(fs string) string {
 
 	for _, p := range ix.Paths() {
 		fs = strings.TrimPrefix(fs, p)
@@ -37,7 +29,7 @@ func extend(base, suffix string) string {
 }
 
 
-func (ix *filenameSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {
+func (ix *trigramSearch) fileQuery(fn, qtype, suffix string) ([]output.Entry, error) {
 	// Don't know how to deal with other types other than line-no mode.
 	log.Printf("Query: %#v", qtype)
 	if qtype != ":" {
