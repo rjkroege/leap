@@ -15,13 +15,13 @@ import (
 // TODO(rjk): Add the necessary flags to configure the project
 // root and what not, force re-indexing etc.
 var (
-	ip = flag.Int("flagname", 1234, "help message for flagname")
+	ip      = flag.Int("flagname", 1234, "help message for flagname")
 	testlog = flag.Bool("testlog", false, "Log in the conventional way for running in a terminal")
 )
 
-func LogToTemp() func()() {
+func LogToTemp() func() {
 
-	logFile, err  := ioutil.TempFile("/tmp", "leap")
+	logFile, err := ioutil.TempFile("/tmp", "leap")
 	if err != nil {
 		log.Panic("leap couldn't make a logging file: %v", err)
 	}
@@ -35,9 +35,9 @@ func LogToTemp() func()() {
 
 func main() {
 	flag.Usage = func() {
-	        fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0] )
-	        fmt.Fprintf(os.Stderr, "	%s <flags listed below> <search string>\n", os.Args[0] )
-	        flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "	%s <flags listed below> <search string>\n", os.Args[0])
+		flag.PrintDefaults()
 	}
 	flag.Parse()
 
@@ -51,7 +51,6 @@ func main() {
 
 	log.Println("parse out", fn, stype)
 
-	
 	// gen := search.NewStaticGenerator()
 	gen := search.NewTrigramSearch()
 
@@ -59,4 +58,3 @@ func main() {
 	entries, _ := gen.Query(fn, stype, suffix)
 	output.WriteOut(os.Stdout, entries)
 }
-
