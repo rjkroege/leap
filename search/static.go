@@ -1,7 +1,6 @@
 package search
 
 import (
-	"log"
 	"strings"
 
 	"github.com/rjkroege/leap/output"
