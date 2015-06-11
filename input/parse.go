@@ -1,7 +1,6 @@
 package input
 
 import (
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,10 +11,7 @@ var splitter = regexp.MustCompile("([^@/#:]*)([@/#:]?)([^@/#:]*)")
 // chunkInput divides the given input into its before and after
 // separate portions.
 func chunkInput(s string) (string, string, string) {
-	// split the string
-
 	matches := splitter.FindAllStringSubmatch(s, -1)
-	log.Printf("matches: %v", matches)
 
 	if matches == nil {
 		return "", "", ""
@@ -31,12 +27,13 @@ func fileExp(s string) string {
 	return ".*" + strings.Join(ex, ".*") + ".*"
 }
 
-// Go only. 
+// symbolExp returns a regexp to find symbols in Golang source.
 func symbolExp(s string) string {
 	ex := strings.Split(s, "")
 	return "(func|type|var|const).*" + strings.Join(ex, "[a-zA-Z_0-9]*") + "[a-zA-Z_0-9]*"
 }
 
+// Parse generates query-language specific regexps and a query type.
 func Parse(s string) (string, string, string) {
 	prefix, sep, suffix := chunkInput(s)
 	switch sep {
@@ -59,7 +56,3 @@ func numCheck(s string) string {
 	}
 	return s
 }
-
-
-
-
