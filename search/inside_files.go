@@ -6,18 +6,13 @@ import (
 	"io"
 	"log"
 	"os"
-//	"path/filepath"
-//	"strings"
 
-//	"github.com/google/codesearch/index"
 	"github.com/google/codesearch/regexp"
-
-//	"github.com/rjkroege/leap/output"
 )
 
 type inFileMatches struct {
-	fn string
-	lineno int
+	fn        string
+	lineno    int
 	matchLine string
 }
 
@@ -36,14 +31,7 @@ func countNL(b []byte) int {
 	return n
 }
 
-
-// The way that you're passing an array in and out is bad
-// Go code.
-// I can do better.
-
 func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
-	log.Println("file name ", name)
-
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
@@ -52,15 +40,11 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 
 	matches := make([]*inFileMatches, 0, MaximumMatches)
 
-
 	var (
-		buf = make([]byte, 0, 1<<20)
-//		needLineno = true
-		lineno     = 1
-//		prefix     = ""
-		beginText  = true
-		endText    = false
-//		match = true
+		buf       = make([]byte, 0, 1<<20)
+		lineno    = 1
+		beginText = true
+		endText   = false
 	)
 
 	for {
@@ -82,7 +66,6 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 			if m1 < chunkStart {
 				break
 			}
-//			match = true
 			lineStart := bytes.LastIndex(buf[chunkStart:m1], nl) + 1 + chunkStart
 			lineEnd := m1 + 1
 			if lineEnd > end {
@@ -97,8 +80,8 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 			}
 
 			matches = append(matches, &inFileMatches{
-				fn: name,
-				lineno: lineno,
+				fn:        name,
+				lineno:    lineno,
 				matchLine: string(line),
 			})
 
@@ -120,20 +103,15 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 	return matches, nil
 }
 
-// TODO(rjk): Write this better.
-
 func multiFile(fnames []uint32, re *regexp.Regexp, ix *trigramSearch) []*inFileMatches {
-	log.Println("called multiFile len",len(fnames))
 	matches := make([]*inFileMatches, 0, MaximumMatches)
 	for i := 0; len(matches) < cap(matches) && i < len(fnames); i++ {
-		log.Println("multiFile")
 		m, err := searchInFile(re, ix.Name(fnames[i]))
 		if err != nil {
 			log.Println("multiFile error: ", err)
 		} else {
-				matches = append(matches, m...)
+			matches = append(matches, m...)
 		}
 	}
 	return matches
 }
-
