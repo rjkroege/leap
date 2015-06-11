@@ -14,7 +14,6 @@ import (
 // Chops off the prefix. Fails if any one path is a prefix
 // of another path. But that's silly.
 func (ix *trigramSearch) trimmer(fs string) string {
-
 	for _, p := range ix.Paths() {
 		fs = strings.TrimPrefix(fs, p)
 	}
@@ -28,16 +27,13 @@ func extend(base, suffix string) string {
 	return base
 }
 
-
 func (ix *trigramSearch) fileQuery(fn, qtype, suffix string) ([]output.Entry, error) {
-	// Don't know how to deal with other types other than line-no mode.
-	log.Printf("Query: %#v", qtype)
 	if qtype != ":" {
 		return nil, nil
 	}
+	log.Println("fileQuery: ", fn, qtype, suffix)
 
-	//	compile the regexp
-	log.Println("fn", fn)
+	// Compile the regexp.
 	fre, err := regexp.Compile(fn)
 	if err != nil {
 		return nil, err
@@ -46,41 +42,38 @@ func (ix *trigramSearch) fileQuery(fn, qtype, suffix string) ([]output.Entry, er
 	// allQuery inspired by example in Russ's code.
 	allQuery := &index.Query{Op: index.QAll}
 	post := ix.PostingQuery(allQuery)
-	
+
 	fnames := make([]uint32, 0, len(post))
 
 	for _, fileid := range post {
 		name := ix.Name(fileid)
 		sname := ix.trimmer(name)
-
 		if fre.MatchString(sname, true, true) < 0 {
 			continue
 		}
 		fnames = append(fnames, fileid)
 	}
 
-	// Better way to find the pretty sub-name: shortest unique prefix
+	// TODO(rjk): Consider a better way to find the pretty sub-name:
+	// such as the shortest unique prefix.
 
-	oo := make([]output.Entry,0, 20)
+	oo := make([]output.Entry, 0, 20)
 
 	for i := 0; i < 20 && i < len(fnames); i++ {
 		name := ix.Name(fnames[i])
 		title := filepath.Base(name)
-		
+
 		oo = append(oo, output.Entry{
-			Uid: name,
-			Arg: extend(name, suffix),
-			Title: extend(title, suffix),
-			SubTitle:	extend(ix.trimmer(name), suffix),
+			Uid:      name,
+			Arg:      extend(name, suffix),
+			Title:    extend(title, suffix),
+			SubTitle: extend(ix.trimmer(name), suffix),
 
 			Type: "file",
 			Icon: output.AlfredIcon{
 				Filename: "blah.png",
 			},
 		})
-
-		log.Printf("matched %#v", name)
 	}
-
 	return oo, nil
 }
