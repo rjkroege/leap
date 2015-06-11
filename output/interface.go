@@ -4,8 +4,8 @@ package output
 // context and a provided argument
 
 import (
-	"io"
 	"encoding/xml"
+	"io"
 )
 
 type AlfredIcon struct {
@@ -14,17 +14,16 @@ type AlfredIcon struct {
 }
 
 type Entry struct {
-    XMLName      xml.Name   `xml:"item"`
-    Uid          string     `xml:"uid,attr,omitempty"`
-    Arg          string     `xml:"arg,attr"`
-    Type         string     `xml:"type,attr,omitempty"`
-    Valid        string     `xml:"valid,attr,omitempty"`
-    AutoComplete string     `xml:"autocomplete,attr,omitempty"`
-    Title        string     `xml:"title"`
-    SubTitle     string     `xml:"subtitle"`
-    Icon         AlfredIcon `xml:"icon"`
+	XMLName      xml.Name   `xml:"item"`
+	Uid          string     `xml:"uid,attr,omitempty"`
+	Arg          string     `xml:"arg,attr"`
+	Type         string     `xml:"type,attr,omitempty"`
+	Valid        string     `xml:"valid,attr,omitempty"`
+	AutoComplete string     `xml:"autocomplete,attr,omitempty"`
+	Title        string     `xml:"title"`
+	SubTitle     string     `xml:"subtitle"`
+	Icon         AlfredIcon `xml:"icon"`
 }
-
 
 type Generator interface {
 	// Query searches an object of type Entries for the given
@@ -46,7 +45,6 @@ func WriteOut(w io.Writer, e []Entry) error {
 	if err := enc.Encode(items{e}); err != nil {
 		return err
 	}
-	 _, err := io.WriteString(w, "\n")
+	_, err := io.WriteString(w, "\n")
 	return err
 }
-
