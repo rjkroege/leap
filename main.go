@@ -20,7 +20,6 @@ var (
 )
 
 func LogToTemp() func() {
-
 	logFile, err := ioutil.TempFile("/tmp", "leap")
 	if err != nil {
 		log.Panic("leap couldn't make a logging file: %v", err)
@@ -45,13 +44,7 @@ func main() {
 		defer LogToTemp()()
 	}
 
-	log.Printf("hi there %d, %v", *ip, flag.Arg(0))
-
 	fn, stype, suffix := input.Parse(flag.Arg(0))
-
-	log.Println("parse out", fn, stype)
-
-	// gen := search.NewStaticGenerator()
 	gen := search.NewTrigramSearch()
 
 	// TODO(rjk): error check
