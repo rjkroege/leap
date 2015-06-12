@@ -78,7 +78,8 @@ func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error)
 			SubTitle: fmt.Sprintf("%s:%d %s", ix.trimmer(name), m.lineno, m.matchLine),
 			Type:     "file",
 			Icon: output.AlfredIcon{
-				Filename: "blah.png",
+				Filename: name,
+				Type: "fileicon",
 			},
 		})
 	}

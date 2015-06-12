@@ -71,7 +71,8 @@ func (ix *trigramSearch) fileQuery(fn, qtype, suffix string) ([]output.Entry, er
 
 			Type: "file",
 			Icon: output.AlfredIcon{
-				Filename: "blah.png",
+				Filename: name,
+				Type: "fileicon",
 			},
 		})
 	}
