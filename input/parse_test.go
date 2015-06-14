@@ -6,7 +6,6 @@ import (
 )
 
 func TestChunkInput(t *testing.T) {
-
 	a, s, b := chunkInput("ab")
 	if ea, es, eb := "ab", "", ""; a != ea || b != eb || s != es {
 		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
@@ -32,6 +31,10 @@ func TestChunkInput(t *testing.T) {
 		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
 	}
 
+	a, s, b = chunkInput("")
+	if ea, es, eb := "", "", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
+	}
 }
 
 func TestFileExp(t *testing.T) {
@@ -64,7 +67,6 @@ func TestNumCheck(t *testing.T) {
 }
 
 func TestSymbolExp(t *testing.T) {
-
 	if a, ea := symbolExp("a"), "(func|type|var|const).*a[a-zA-Z_0-9]*"; a != ea {
 		t.Errorf("got %v exepcted %v", a, ea)
 	}
@@ -77,5 +79,27 @@ func TestSymbolExp(t *testing.T) {
 	}
 	if _, err := regexp.Compile(symbolExp("ab")); err != nil {
 		t.Errorf("invalid regexp: %v", err)
+	}
+}
+
+func TestParse(t *testing.T) {
+	a, s, b := Parse("a/b")
+	if ea, es, eb := ".*a.*", "/", ".*b.*"; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
+	}
+
+	a, s, b = Parse("a@b")
+	if ea, es, eb := ".*a.*", "/", "(func|type|var|const).*b[a-zA-Z_0-9]*"; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
+	}
+
+	a, s, b = Parse("a:10")
+	if ea, es, eb := ".*a.*", ":", "10"; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
+	}
+
+	a, s, b = Parse("a")
+	if ea, es, eb := ".*a.*", ":", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
 	}
 }
