@@ -7,22 +7,29 @@ import (
 	"log"
 	"os"
 
+	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/input"
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 )
 
-// TODO(rjk): Add the necessary flags to configure the project
-// root and what not, force re-indexing etc.
+// TODO(rjk): It is conceivable that I will want to support having a re-writing
+// path configuration: client can re-write paths for where the file is to be found
+// in the client. I currently don't have this issue. So I'm not going to deal.
 var (
 	ip      = flag.Int("flagname", 1234, "help message for flagname")
-	testlog = flag.Bool("testlog", false, "Log in the conventional way for running in a terminal")
+	testlog = flag.Bool("testlog", false,
+		"Log in the conventional way for running in a terminal. Also changes where to find the configuration file.")
 	server = flag.Bool("server", false, "Run as a server. If a server is already running, does nothing.")
 	stop = flag.Bool("stop", false, "Connect to the configured server and stop it.")
+	index = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
 	host = flag.String("host", "", "Configure hostname for server. Empty host is short-circuited to operate in-memory.")
 	indexpath = flag.String("indexpath", "",
-		"Configure the path to the index file. Use CSEARCHINDEX if not provided.")
-	
+		"Configure the path to the index file. Use CSEARCHINDEX if not provided. Ignored by a client connecting to a server.")
+	remote = flag.Bool("remote", false,
+		"Update the configuration file to specify that leap should operate in remote mode.")
+	local = flag.Bool("local", false,
+		"Update the configuration file to specify that leap should operate in local mode.")
 )
 
 func LogToTemp() func() {
@@ -58,14 +65,25 @@ func main() {
 		fmt.Fprintln(os.Stderr, "stop the running server")
 		return
 	}
-	if *host != "" {
-		fmt.Fprintln(os.Stderr, "set host field", *host)
+	if *remote || *local || *host != "" || *indexpath != "" {
+		connect := false
+		if *remote {
+			connect = true
+		} else if *local {
+			connect = false
+		}
+		if err := base.UpdateConfigurationFromCommandLine(base.Filepath(*testlog), *host, *indexpath, connect); err != nil {
+			log.Println("failed to update configuration: ", err)
+		}
 		return
 	}
 
-	// Default mode of operation.
-	// TODO(rjk): read configuration.
-
+	config, err := base.GetConfiguration(base.Filepath(*testlog))
+	if err != nil {
+		log.Println("couldn't read configuration: ", err)
+		return
+	}
+	log.Println("config: ", *config)
 
 	fn, stype, suffix := input.Parse(flag.Arg(0))
 	gen := search.NewTrigramSearch()
