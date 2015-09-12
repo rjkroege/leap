@@ -11,6 +11,7 @@ import (
 	"github.com/rjkroege/leap/input"
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
+	"github.com/rjkroege/leap/server"
 )
 
 // TODO(rjk): It is conceivable that I will want to support having a re-writing
@@ -20,7 +21,7 @@ var (
 	ip      = flag.Int("flagname", 1234, "help message for flagname")
 	testlog = flag.Bool("testlog", false,
 		"Log in the conventional way for running in a terminal. Also changes where to find the configuration file.")
-	server = flag.Bool("server", false, "Run as a server. If a server is already running, does nothing.")
+	runServer = flag.Bool("server", false, "Run as a server. If a server is already running, does nothing.")
 	stop = flag.Bool("stop", false, "Connect to the configured server and stop it.")
 	index = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
 	host = flag.String("host", "", "Configure hostname for server. Empty host is short-circuited to operate in-memory.")
@@ -57,8 +58,15 @@ func main() {
 		defer LogToTemp()()
 	}
 
-	if *server {
+	if *runServer {
 		fmt.Fprintln(os.Stderr, "go run as server")
+		config, err := base.GetConfiguration(base.Filepath(*testlog))
+		if err != nil {
+			log.Println("couldn't read configuration: ", err)
+			return
+		}
+		// I want this to stop here...
+		server.BeginServing(config)
 		return
 	}
 	if *stop {
