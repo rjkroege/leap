@@ -12,6 +12,7 @@ import (
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 	"github.com/rjkroege/leap/server"
+	"github.com/rjkroege/leap/client"
 )
 
 // TODO(rjk): It is conceivable that I will want to support having a re-writing
@@ -94,9 +95,21 @@ func main() {
 	log.Println("config: ", *config)
 
 	fn, stype, suffix := input.Parse(flag.Arg(0))
-	gen := search.NewTrigramSearch()
 
-	// TODO(rjk): error check
-	entries, _ := gen.Query(fn, stype, suffix)
+	var entries  []output.Entry
+
+	if config.Connect {
+		outputString, err := client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
+		// TODO(rjk): must also handle the processing of the output args
+		if err != nil {
+			log.Fatalln("problem connecting to server: ", err);
+		}
+		log.Println("received from client", outputString)
+		return
+	} else {
+		gen := search.NewTrigramSearch()
+		// TODO(rjk): error check
+		entries, _ = gen.Query(fn, stype, suffix)
+	}
 	output.WriteOut(os.Stdout, entries)
 }

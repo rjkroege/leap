@@ -8,12 +8,22 @@ import (
 	"os"
 
 	"github.com/rjkroege/leap/base"
-	// "github.com/rjkroege/leap/output"
+	"github.com/rjkroege/leap/output"
 	// "github.com/rjkroege/leap/search"
 )
 
 
 type Server struct {
+}
+
+type QueryBundle struct {
+	Fn string
+	Stype string
+	Suffix string
+}
+
+type QueryResult struct {
+	Entries []output.Entry
 }
 
 func BeginServing(config *base.Configuration)  {
@@ -30,9 +40,10 @@ func BeginServing(config *base.Configuration)  {
 	http.Serve(l, nil)
 }
 
-func (t *Server) Leap(query string, resultBuffer *string) error {
+// Need to parse args myself.
+func (t *Server) Leap(query QueryBundle, resultBuffer *QueryResult) error {
 	log.Println("go leap remoted: ", query)
-	*resultBuffer = "hello there"
+	*resultBuffer = QueryResult{[]output.Entry{}}
 	return nil
 }
 
