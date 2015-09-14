@@ -9,11 +9,12 @@ import (
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/output"
-	// "github.com/rjkroege/leap/search"
+	"github.com/rjkroege/leap/search"
 )
 
 
 type Server struct {
+	search output.Generator
 }
 
 type QueryBundle struct {
@@ -29,7 +30,8 @@ type QueryResult struct {
 func BeginServing(config *base.Configuration)  {
 	// May wish to place self in new process group.	
 
-	state := &Server{}
+	// need to take index path from Configuration
+	state := &Server{ search.NewTrigramSearch() }
 	rpc.Register(state)
 	rpc.HandleHTTP()
 
@@ -43,8 +45,10 @@ func BeginServing(config *base.Configuration)  {
 // Need to parse args myself.
 func (t *Server) Leap(query QueryBundle, resultBuffer *QueryResult) error {
 	log.Println("go leap remoted: ", query)
-	*resultBuffer = QueryResult{[]output.Entry{}}
-	return nil
+	entries, err := t.search.Query(query.Fn, query.Stype, query.Suffix)
+	log.Println(entries)
+	*resultBuffer = QueryResult{entries}
+	return err
 }
 
 

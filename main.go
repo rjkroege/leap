@@ -99,13 +99,10 @@ func main() {
 	var entries  []output.Entry
 
 	if config.Connect {
-		outputString, err := client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
-		// TODO(rjk): must also handle the processing of the output args
+		entries, err = client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
 		if err != nil {
 			log.Fatalln("problem connecting to server: ", err);
 		}
-		log.Println("received from client", outputString)
-		return
 	} else {
 		gen := search.NewTrigramSearch()
 		// TODO(rjk): error check
