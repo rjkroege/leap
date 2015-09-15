@@ -27,11 +27,13 @@ var (
 	index = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
 	host = flag.String("host", "", "Configure hostname for server. Empty host is short-circuited to operate in-memory.")
 	indexpath = flag.String("indexpath", "",
-		"Configure the path to the index file. Use CSEARCHINDEX if not provided. Ignored by a client connecting to a server.")
+		"Configure the path to the index file. Use CSEARCHINDEX if not provided. Client-only invocations ignore the configured index path.")
+	resetpath = flag.Bool("resetpath", false,
+		"Clear the configured index path.")
 	remote = flag.Bool("remote", false,
 		"Update the configuration file to specify that leap should operate in remote mode.")
 	local = flag.Bool("local", false,
-		"Update the configuration file to specify that leap should operate in local mode.")
+		"Update the configuration file to specify that leap should operate in local mode. Only one of -local and -remote can be specified.")
 )
 
 func LogToTemp() func() {
@@ -47,6 +49,47 @@ func LogToTemp() func() {
 	}
 }
 
+func updateConfigIfNecessary() {
+	if !(*remote || *local || *host != "" || *indexpath != "" || *resetpath) {
+		return
+	}
+
+	fp := base.Filepath(*testlog)
+	config, err := base.GetConfiguration(fp)
+	if err != nil {
+		log.Println("Failed to read configuration: ", err)
+	}
+
+	switch {
+	case *remote && *local:
+		flag.Usage()
+		os.Exit(1)
+	case *remote:
+		config.Connect = true
+	case *local:
+		config.Connect = false
+	}
+
+	switch {
+	case *resetpath && *indexpath != "":
+		flag.Usage()
+		os.Exit(1)
+	case *resetpath:
+		config.Indexpath = ""
+	case *indexpath != "":
+		config.Indexpath = *indexpath
+	}
+
+	if *host != "" {
+		config.Hostname = *host
+	}
+
+	if err := base.SaveConfiguration(config, fp); err != nil {
+		log.Fatalf("Failed to write configuration: ", err)
+	}
+	os.Exit(0)
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -54,38 +97,27 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
-
 	if !*testlog {
 		defer LogToTemp()()
 	}
 
-	if *runServer {
+	switch {
+	case *runServer:
 		fmt.Fprintln(os.Stderr, "go run as server")
 		config, err := base.GetConfiguration(base.Filepath(*testlog))
 		if err != nil {
 			log.Println("couldn't read configuration: ", err)
 			return
 		}
-		// I want this to stop here...
 		server.BeginServing(config)
-		return
-	}
-	if *stop {
+		os.Exit(0)
+	case *stop:
 		fmt.Fprintln(os.Stderr, "stop the running server")
-		return
+		os.Exit(0)
 	}
-	if *remote || *local || *host != "" || *indexpath != "" {
-		connect := false
-		if *remote {
-			connect = true
-		} else if *local {
-			connect = false
-		}
-		if err := base.UpdateConfigurationFromCommandLine(base.Filepath(*testlog), *host, *indexpath, connect); err != nil {
-			log.Println("failed to update configuration: ", err)
-		}
-		return
-	}
+
+	// May exit.
+	updateConfigIfNecessary()
 
 	config, err := base.GetConfiguration(base.Filepath(*testlog))
 	if err != nil {
@@ -104,7 +136,7 @@ func main() {
 			log.Fatalln("problem connecting to server: ", err);
 		}
 	} else {
-		gen := search.NewTrigramSearch()
+		gen := search.NewTrigramSearch(config.Indexpath)
 		// TODO(rjk): error check
 		entries, _ = gen.Query(fn, stype, suffix)
 	}

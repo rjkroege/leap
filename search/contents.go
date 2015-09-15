@@ -19,8 +19,8 @@ type trigramSearch struct {
 
 // NewTrigramSearch returns a Generator that can search
 // inside of files.
-func NewTrigramSearch() output.Generator {
-	return &trigramSearch{*index.Open(index.File())}
+func NewTrigramSearch(path string) output.Generator {
+	return &trigramSearch{*index.Open(path)}
 }
 
 func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {

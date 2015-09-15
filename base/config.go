@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"runtime"
+
+	"github.com/google/codesearch/index"
 )
 
 // TODO(rjk): Do I need the attributes?
@@ -33,7 +35,11 @@ func GetConfiguration(fp string) (*Configuration, error) {
 	fd, err := os.Open(fp)
 
 	if os.IsNotExist(err) {
-		return &Configuration{"", "", false}, nil
+		return &Configuration{
+			Hostname: "",
+			Indexpath: index.File(),
+			Connect: false,
+		}, nil
 	} else if err != nil {
 		return nil, err
 	}
@@ -43,6 +49,9 @@ func GetConfiguration(fp string) (*Configuration, error) {
 	config := new(Configuration)
 	if err := decoder.Decode(config); err != nil {
 		return nil, err
+	}
+	if config.Indexpath == "" {
+		config.Indexpath = index.File()
 	}
 	return config, nil
 }
@@ -62,21 +71,3 @@ func SaveConfiguration(config *Configuration, fp string) error {
 	}
 	return nil
 }
-
-func UpdateConfigurationFromCommandLine(fp, host, indexpath string, connect bool) error {
-	config, err := GetConfiguration(fp)
-	if err != nil {
-		return err 
-	}
-	
-	if host != "" {
-		config.Hostname = host
-	}
-	if indexpath != "" {
-		config.Indexpath = indexpath
-	}
-	config.Connect = connect
-	return SaveConfiguration(config, fp)
-}
-
-
