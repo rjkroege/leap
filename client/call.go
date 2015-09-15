@@ -9,16 +9,15 @@ import (
 	"github.com/rjkroege/leap/server"
 )
 
-func RemoteInvokeQuery(_ *base.Configuration, query server.QueryBundle) ([]output.Entry, error) {
-	// TODO(rjk): fix up the addressing and pass in config
-	serverAddress := "localhost"
+// TODO(rjk): Make the port configurable?
+func RemoteInvokeQuery(config *base.Configuration, query server.QueryBundle) ([]output.Entry, error) {
+	serverAddress := config.Hostname
 	client, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
 	if err != nil {
 		return nil, err
 	}
 
 	// Synchronous call
-	// TODO(rjk): need to create some kind of argument packetization.
 	var reply server.QueryResult
 	err = client.Call("Server.Leap", query, &reply)
 	if err != nil {
@@ -26,4 +25,19 @@ func RemoteInvokeQuery(_ *base.Configuration, query server.QueryBundle) ([]outpu
 	}
 	
 	return reply.Entries, nil
+}
+
+func Shutdown(config *base.Configuration) error {
+	serverAddress := config.Hostname
+	client, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
+	if err != nil {
+		return err
+	}
+
+	var reply string
+	err = client.Call("Server.Shutdown", "", &reply)
+	if err != nil {
+		return err
+	}
+	return nil
 }

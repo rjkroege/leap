@@ -106,13 +106,19 @@ func main() {
 		fmt.Fprintln(os.Stderr, "go run as server")
 		config, err := base.GetConfiguration(base.Filepath(*testlog))
 		if err != nil {
-			log.Println("couldn't read configuration: ", err)
-			return
+			log.Fatal("couldn't read configuration: ", err)
 		}
 		server.BeginServing(config)
 		os.Exit(0)
 	case *stop:
-		fmt.Fprintln(os.Stderr, "stop the running server")
+		config, err := base.GetConfiguration(base.Filepath(*testlog))
+		if err != nil {
+			log.Fatal("couldn't read configuration: ", err)
+			return
+		}
+		if err := client.Shutdown(config); err != nil {
+			log.Println("shutdown generated output: ", err)
+		}
 		os.Exit(0)
 	}
 
