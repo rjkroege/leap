@@ -27,6 +27,10 @@ func fileExp(s string) string {
 	return ".*" + strings.Join(ex, ".*") + ".*"
 }
 
+func inLineExp(s string) string {
+	return ".*" + s  + ".*"
+}
+
 // symbolExp returns a regexp to find symbols in Golang source.
 func symbolExp(s string) string {
 	ex := strings.Split(s, "")
@@ -42,7 +46,7 @@ func Parse(s string) (string, string, string) {
 	case "#", ":":
 		return fileExp(prefix), ":", numCheck(suffix)
 	case "/":
-		return fileExp(prefix), "/", fileExp(suffix)
+		return fileExp(prefix), "/", inLineExp(suffix)
 	case "":
 		return fileExp(prefix), ":", ""
 	}
