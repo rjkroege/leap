@@ -15,7 +15,8 @@ import (
 // of another path. But that's silly.
 func (ix *trigramSearch) trimmer(fs string) string {
 	for _, p := range ix.Paths() {
-		fs = strings.TrimPrefix(fs, p)
+		// Probably wrong on windows.
+		fs = strings.TrimPrefix(fs, p + "/")
 	}
 	return fs
 }
