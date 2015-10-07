@@ -8,21 +8,57 @@ import (
 func TestChunkInput(t *testing.T) {
 	a, s, b := chunkInput("ab")
 	if ea, es, eb := "ab", "", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v",
+			a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("a")
+	if ea, es, eb := "a", "", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v",
+			a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("a/b/c")
+	if ea, es, eb := "a/b/c", "", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v",
+			a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("/a/b/c")
+	if ea, es, eb := "/a/b/c", "", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v",
+			a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("/a/b/c//de")
+	if ea, es, eb := "/a/b/c", "//", "de"; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v",
+			a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("a/b")
+	if ea, es, eb := "a/b", "", ""; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v",
+			a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("a/b//c")
+	if ea, es, eb := "a/b", "//", "c"; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v", a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("//c")
+	if ea, es, eb := "", "//", "c"; a != ea || b != eb || s != es {
+		t.Errorf("got %#v,%#v, %#v exepcted %#v, %#v %#v", a, s, b, ea, es, eb)
+	}
+
+	a, s, b = chunkInput("a/b#c")
+	if ea, es, eb := "a/b", "#", "c"; a != ea || b != eb || s != es {
 		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
 	}
 
-	a, s, b = chunkInput("ab/c")
-	if ea, es, eb := "ab", "/", "c"; a != ea || b != eb || s != es {
-		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
-	}
-
-	a, s, b = chunkInput("ab#c")
-	if ea, es, eb := "ab", "#", "c"; a != ea || b != eb || s != es {
-		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
-	}
-
-	a, s, b = chunkInput("ab@c")
-	if ea, es, eb := "ab", "@", "c"; a != ea || b != eb || s != es {
+	a, s, b = chunkInput("a/b@c")
+	if ea, es, eb := "a/b", "@", "c"; a != ea || b != eb || s != es {
 		t.Errorf("got %v,%v, exepcted %v, %v", a, s, b, ea, es, eb)
 	}
 
@@ -53,6 +89,19 @@ func TestFileExp(t *testing.T) {
 		t.Errorf("invalid regexp: %v", err)
 	}
 
+	if a, ea := fileExp("a/b"), ".*a/b.*"; a != ea {
+		t.Errorf("got %v exepcted %v", a, ea)
+	}
+	if _, err := regexp.Compile(fileExp("a/b")); err != nil {
+		t.Errorf("invalid regexp: %v", err)
+	}
+
+	if a, ea := fileExp("a/bc/d"), ".*a/b.*c/d.*"; a != ea {
+		t.Errorf("got %v exepcted %v", a, ea)
+	}
+	if _, err := regexp.Compile(fileExp("a/bc/d")); err != nil {
+		t.Errorf("invalid regexp: %v", err)
+	}
 }
 
 func TestNumCheck(t *testing.T) {
@@ -83,7 +132,7 @@ func TestSymbolExp(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	a, s, b := Parse("a/b")
+	a, s, b := Parse("a//b")
 	if ea, es, eb := ".*a.*", "/", ".*b.*"; a != ea || b != eb || s != es {
 		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
 	}

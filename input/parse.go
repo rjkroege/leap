@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var splitter = regexp.MustCompile("([^@/#:]*)([@/#:]?)([^@/#:]*)")
+var splitter = regexp.MustCompile("(([^@#:/]*/?[^@#:/]+)*)([@#:]|//)?([^@/#:]*)")
 
 // chunkInput divides the given input into its before and after
 // separate portions.
@@ -16,15 +16,21 @@ func chunkInput(s string) (string, string, string) {
 	if matches == nil {
 		return "", "", ""
 	}
-	return matches[0][1], matches[0][2], matches[0][3]
+	return matches[0][1], matches[0][3], matches[0][4]
 }
 
 // fileExp transforms the given string into a regexp string
 // appropriate for file patterns. Not expected to generate
 // rational output on empty strings.
 func fileExp(s string) string {
-	ex := strings.Split(s, "")
-	return ".*" + strings.Join(ex, ".*") + ".*"
+
+	subpaths := strings.Split(s, "/")
+	fuzzedpaths := make([]string, 0, len(subpaths))
+	for _, sp := range  subpaths {
+		ex := strings.Split(sp, "")
+		fuzzedpaths = append(fuzzedpaths, strings.Join(ex, ".*"))
+	}
+	return ".*" + strings.Join(fuzzedpaths, "/")  + ".*"
 }
 
 func inLineExp(s string) string {
@@ -45,7 +51,7 @@ func Parse(s string) (string, string, string) {
 		return fileExp(prefix), "/", symbolExp(suffix)
 	case "#", ":":
 		return fileExp(prefix), ":", numCheck(suffix)
-	case "/":
+	case "/", "//": 
 		return fileExp(prefix), "/", inLineExp(suffix)
 	case "":
 		return fileExp(prefix), ":", ""
