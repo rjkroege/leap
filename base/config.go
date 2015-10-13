@@ -15,6 +15,7 @@ type Configuration struct {
 	Hostname string
 	Indexpath string
 	Connect bool
+	Prefixes []string
 }
 
 func Filepath(test bool) string {

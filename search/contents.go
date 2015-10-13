@@ -15,12 +15,13 @@ const MaximumMatches = 50
 
 type trigramSearch struct {
 	index.Index
+	prefixes []string
 }
 
 // NewTrigramSearch returns a Generator that can search
 // inside of files.
-func NewTrigramSearch(path string) output.Generator {
-	return &trigramSearch{*index.Open(path)}
+func NewTrigramSearch(path string, prefixes []string) output.Generator {
+	return &trigramSearch{*index.Open(path), prefixes}
 }
 
 func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {

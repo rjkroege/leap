@@ -34,6 +34,8 @@ var (
 		"Update the configuration file to specify that leap should operate in remote mode.")
 	local = flag.Bool("local", false,
 		"Update the configuration file to specify that leap should operate in local mode. Only one of -local and -remote can be specified.")
+	setprefix = flag.Bool("setprefix", false,
+		"Set the path trimming prefixes to the given paths.")
 )
 
 func LogToTemp() func() {
@@ -49,8 +51,8 @@ func LogToTemp() func() {
 	}
 }
 
-func updateConfigIfNecessary() {
-	if !(*remote || *local || *host != "" || *indexpath != "" || *resetpath) {
+func updateConfigIfNecessary(args []string) {
+	if !(*remote || *local || *host != "" || *indexpath != "" || *resetpath || *setprefix) {
 		return
 	}
 
@@ -82,6 +84,11 @@ func updateConfigIfNecessary() {
 
 	if *host != "" {
 		config.Hostname = *host
+	}
+
+	if *setprefix {
+		log.Println("Setprefix", args)
+		config.Prefixes = args
 	}
 
 	if err := base.SaveConfiguration(config, fp); err != nil {
@@ -123,7 +130,7 @@ func main() {
 	}
 
 	// May exit.
-	updateConfigIfNecessary()
+	updateConfigIfNecessary(flag.Args())
 
 	config, err := base.GetConfiguration(base.Filepath(*testlog))
 	if err != nil {
@@ -142,7 +149,7 @@ func main() {
 			log.Fatalln("problem connecting to server: ", err);
 		}
 	} else {
-		gen := search.NewTrigramSearch(config.Indexpath)
+		gen := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
 		// TODO(rjk): error check
 		entries, _ = gen.Query(fn, stype, suffix)
 	}

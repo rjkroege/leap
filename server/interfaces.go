@@ -31,7 +31,7 @@ func BeginServing(config *base.Configuration)  {
 	// May wish to place self in new process group.	
 
 	// need to take index path from Configuration
-	state := &Server{ search.NewTrigramSearch(config.Indexpath) }
+	state := &Server{ search.NewTrigramSearch(config.Indexpath, config.Prefixes) }
 	rpc.Register(state)
 	rpc.HandleHTTP()
 

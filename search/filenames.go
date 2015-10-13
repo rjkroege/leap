@@ -11,12 +11,22 @@ import (
 	"github.com/rjkroege/leap/output"
 )
 
-// Chops off the prefix. Fails if any one path is a prefix
-// of another path. But that's silly.
+// Chops off the prefix. Fails if any one path is a prefix of another
+// path. But that's silly. The prefix can come either from the
+// configuration or from the base directories of the index.
 func (ix *trigramSearch) trimmer(fs string) string {
-	for _, p := range ix.Paths() {
+	paths := ix.Paths()
+	if ix.prefixes != nil {
+		paths = ix.prefixes
+	}
+	
+	for _, p := range paths {
 		// Probably wrong on windows.
-		fs = strings.TrimPrefix(fs, p + "/")
+		if p[len(p)-1] == '/' {
+			fs = strings.TrimPrefix(fs, p)
+		} else {
+			fs = strings.TrimPrefix(fs, p + "/")
+		}
 	}
 	return fs
 }
