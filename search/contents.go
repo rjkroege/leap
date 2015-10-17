@@ -19,7 +19,8 @@ type trigramSearch struct {
 }
 
 // NewTrigramSearch returns a Generator that can search
-// inside of files.
+// inside of files using index at path and project truncation
+// prefixes.
 func NewTrigramSearch(path string, prefixes []string) output.Generator {
 	return &trigramSearch{*index.Open(path), prefixes}
 }
