@@ -117,3 +117,23 @@ func TestOneMatchContentQuery(t *testing.T) {
 		t.Errorf("got %#v exepcted %#v", got, expected)
 	}
 }
+
+func TestBadFileRegexp(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	// One file contains carrot.
+	_, err := gen.Query(")*", "/", "")
+	if err == nil {
+		t.Errorf("unexpected absence of error on query: %v\n", err)
+	}
+}
+
+func TestBadContentRegexp(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	// One file contains carrot.
+	_, err := gen.Query("", "/", ")*")
+	if err == nil {
+		t.Errorf("unexpected absence of error on query: %v\n", err)
+	}
+}
