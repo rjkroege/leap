@@ -49,17 +49,67 @@ func TestOneMatchFileNameOnlyQuery(t *testing.T) {
 	// One file has c in the name.
 	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
-		Uid:          tDir("test_data/b/ccc.txt/good bye\n"),
-		Arg:          tDir("test_data/b/ccc.txt:1"),
+		Uid:          tDir("test_data/b/ccc.txt"),
+		Arg:          tDir("test_data/b/ccc.txt"),
 		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
-		Title:        "ccc.txt:1 good bye\n",
-		SubTitle:     "b/ccc.txt:1 good bye\n",
+		Title:        "ccc.txt",
+		SubTitle:     "b/ccc.txt",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query(".*c.*", "", "")
+	got, err := gen.Query(".*c.*", ":", "")
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
+
+func TestOneMatchFileNameLineNumberQuery(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	// One file has c in the name.
+	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/ccc.txt"),
+		Arg:          tDir("test_data/b/ccc.txt:2"),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "ccc.txt:2",
+		SubTitle:     "b/ccc.txt:2",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
+			Type: "fileicon"}}}
+
+	got, err := gen.Query(".*c.*", ":", "2")
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
+
+func TestOneMatchContentQuery(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	// One file contains carrot.
+	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/aaa.txt/carrot\n"),
+		Arg:          tDir("test_data/b/aaa.txt:1"),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "aaa.txt:1 carrot\n",
+		SubTitle:     "b/aaa.txt:1 carrot\n",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/aaa.txt"),
+			Type: "fileicon"}}}
+
+	got, err := gen.Query("", "/", "carrot")
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
