@@ -1,7 +1,6 @@
 package search
 
 import (
-	"log"
 	"path/filepath"
 	"strings"
 
@@ -39,11 +38,6 @@ func extend(base, suffix string) string {
 }
 
 func (ix *trigramSearch) fileQuery(fn, qtype, suffix string) ([]output.Entry, error) {
-	if qtype != ":" {
-		return nil, nil
-	}
-	log.Println("fileQuery: ", fn, qtype, suffix)
-
 	// Compile the regexp.
 	fre, err := regexp.Compile(fn)
 	if err != nil {
