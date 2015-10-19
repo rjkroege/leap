@@ -37,13 +37,7 @@ func extend(base, suffix string) string {
 	return base
 }
 
-func (ix *trigramSearch) fileQuery(fn, qtype, suffix string) ([]output.Entry, error) {
-	// Compile the regexp.
-	fre, err := regexp.Compile(fn)
-	if err != nil {
-		return nil, err
-	}
-
+func (ix *trigramSearch) fileQuery(fre *regexp.Regexp, fn, suffix string) ([]output.Entry, error) {
 	// allQuery inspired by example in Russ's code.
 	allQuery := &index.Query{Op: index.QAll}
 	post := ix.PostingQuery(allQuery)

@@ -26,22 +26,21 @@ func NewTrigramSearch(path string, prefixes []string) output.Generator {
 }
 
 func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {
-	// TODO(rjk): Refactor this code.
-	if qtype == ":" {
-		return ix.fileQuery(fn, qtype, suffix)
-	}
 	log.Printf("Query: %#v", qtype)
+
+	//	compile the filename regexp
+	log.Println("fn", fn)
+	fre, err := regexp.Compile(fn)
+	if err != nil {
+		return nil, err
+	}
+	if qtype == ":" {
+		return ix.fileQuery(fre, fn, suffix)
+	}
 
 	// compile the in-file regexp
 	pat := "(?m)" + suffix
 	re, err := regexp.Compile(pat)
-	if err != nil {
-		return nil, err
-	}
-
-	//	compile the regexp
-	log.Println("fn", fn)
-	fre, err := regexp.Compile(fn)
 	if err != nil {
 		return nil, err
 	}
