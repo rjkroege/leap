@@ -137,3 +137,57 @@ func TestBadContentRegexp(t *testing.T) {
 		t.Errorf("unexpected absence of error on query: %v\n", err)
 	}
 }
+
+func TestOneMatchFileNameLineNumberQueryWithPrefix(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), []string{
+		tDir(""),
+	})
+
+	// One file has c in the name.
+	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/ccc.txt"),
+		Arg:          tDir("test_data/b/ccc.txt:2"),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "ccc.txt:2",
+		SubTitle:     "test_data/b/ccc.txt:2",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
+			Type: "fileicon"}}}
+
+	got, err := gen.Query(".*c.*", ":", "2")
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
+
+func TestOneMatchFileNameLineNumberQueryWithSlashedPrefix(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), []string{
+		tDir("")  + "/",
+	})
+
+	// One file has c in the name.
+	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/ccc.txt"),
+		Arg:          tDir("test_data/b/ccc.txt:2"),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "ccc.txt:2",
+		SubTitle:     "test_data/b/ccc.txt:2",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
+			Type: "fileicon"}}}
+
+	got, err := gen.Query(".*c.*", ":", "2")
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
