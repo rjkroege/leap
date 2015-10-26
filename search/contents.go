@@ -45,6 +45,9 @@ func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error)
 		return nil, err
 	}
 
+	// TODO(rjk): The result of this is that we first build a list of
+	// filenames with matches. This is very expensive for a large
+	// corpus like Chrome. Bound this in some way. 
 	q := index.RegexpQuery(re.Syntax)
 	post := ix.PostingQuery(q)
 

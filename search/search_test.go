@@ -1,10 +1,15 @@
 package search
 
 import (
+	"bytes"
 	"encoding/xml"
+	"log"
+	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/rjkroege/leap/output"
@@ -100,12 +105,12 @@ func TestOneMatchContentQuery(t *testing.T) {
 	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/aaa.txt/carrot\n"),
-		Arg:          tDir("test_data/b/aaa.txt:1"),
+		Arg:          tDir("test_data/b/aaa.txt:2"),
 		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
-		Title:        "aaa.txt:1 carrot\n",
-		SubTitle:     "b/aaa.txt:1 carrot\n",
+		Title:        "aaa.txt:2 carrot\n",
+		SubTitle:     "b/aaa.txt:2 carrot\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/aaa.txt"),
 			Type: "fileicon"}}}
 
@@ -191,3 +196,101 @@ func TestOneMatchFileNameLineNumberQueryWithSlashedPrefix(t *testing.T) {
 		t.Errorf("got %#v exepcted %#v", got, expected)
 	}
 }
+
+func TestMissingFile(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	os.Rename("test_data/b/aaa.txt", "test_data/b/aaa.txt.missing")
+	defer os.Rename("test_data/b/aaa.txt.missing", "test_data/b/aaa.txt")
+
+	// One file contains carrot.
+	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/ccc.txt/beet\n"),
+		Arg:          tDir("test_data/b/ccc.txt:4"),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "ccc.txt:4 beet\n",
+		SubTitle:     "b/ccc.txt:4 beet\n",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
+			Type: "fileicon"}}}
+
+	// Inject log
+	txtlog := new(bytes.Buffer)
+	log.SetOutput(txtlog)
+
+	// Run query
+	got, err := gen.Query("", "/", "beet")
+
+	// Put the log back.
+	log.SetOutput(os.Stderr)
+
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+	lgot := txtlog.String()
+	lexpected := "multiFile error:  open " + tDir("test_data/b/aaa.txt") + ": no such file or directory"
+	if strings.Index(lgot, lexpected) == -1 {
+		t.Errorf("got %#v exepcted %#v", lgot, lexpected)
+	}
+}
+
+func TestLargeFile(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	// One file contains carrot.
+	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/bbb.txt/turnip"),
+		Arg:          tDir("test_data/b/bbb.txt:7617"),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "bbb.txt:7617 turnip",
+		SubTitle:     "b/bbb.txt:7617 turnip",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/bbb.txt"),
+			Type: "fileicon"}}}
+
+	got, err := gen.Query("", "/", "turnip")
+
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
+
+func TestManyMatchesFile(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	expected := make([]output.Entry, MaximumMatches)
+	for i, _ := range expected {
+		num := fmt.Sprintf("%d", i + 1)
+		expected[i] = output.Entry{XMLName: xml.Name{Space: "",
+		Local: ""},
+		Uid:          tDir("test_data/b/ddd.txt/broccoli\n"),
+		Arg:          tDir("test_data/b/ddd.txt:" + num),
+		Type:         "file",
+		Valid:        "",
+		AutoComplete: "",
+		Title:        "ddd.txt:" + num + " broccoli\n",
+		SubTitle:     "b/ddd.txt:" + num +" broccoli\n",
+		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ddd.txt"),
+			Type: "fileicon"}}
+	}
+
+	got, err := gen.Query("", "/", "broccoli")
+
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
+
