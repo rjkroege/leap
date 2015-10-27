@@ -4,9 +4,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/codesearch/index"
-	"github.com/google/codesearch/regexp"
-
 	"github.com/rjkroege/leap/output"
 )
 
@@ -37,28 +34,12 @@ func extend(base, suffix string) string {
 	return base
 }
 
-func (ix *trigramSearch) fileQuery(fre *regexp.Regexp, fn, suffix string) ([]output.Entry, error) {
-	// allQuery inspired by example in Russ's code.
-	allQuery := &index.Query{Op: index.QAll}
-	post := ix.PostingQuery(allQuery)
-
-	fnames := make([]uint32, 0, len(post))
-
-	for _, fileid := range post {
-		name := ix.Name(fileid)
-		sname := ix.trimmer(name)
-		if fre.MatchString(sname, true, true) < 0 {
-			continue
-		}
-		fnames = append(fnames, fileid)
-	}
-
+func (ix *trigramSearch) filenameResult(fnames []uint32, suffix string) ([]output.Entry, error) {
 	// TODO(rjk): Consider a better way to find the pretty sub-name:
 	// such as the shortest unique prefix.
+	oo := make([]output.Entry, 0, MaximumMatches)
 
-	oo := make([]output.Entry, 0, 20)
-
-	for i := 0; i < 20 && i < len(fnames); i++ {
+	for i := 0; i < MaximumMatches && i < len(fnames); i++ {
 		name := ix.Name(fnames[i])
 		title := filepath.Base(name)
 
