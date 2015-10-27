@@ -39,8 +39,8 @@ func (ix *trigramSearch) filenameResult(fnames []uint32, suffix string) ([]outpu
 	// such as the shortest unique prefix.
 	oo := make([]output.Entry, 0, MaximumMatches)
 
-	for i := 0; i < MaximumMatches && i < len(fnames); i++ {
-		name := ix.Name(fnames[i])
+	for _, fn := range fnames {
+		name := ix.Name(fn)
 		title := filepath.Base(name)
 
 		oo = append(oo, output.Entry{

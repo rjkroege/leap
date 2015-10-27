@@ -109,7 +109,7 @@ func TestOneMatchContentQuery(t *testing.T) {
 		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
-		Title:        "aaa.txt:2 carrot\n",
+		Title:        "2 carrot\n",
 		SubTitle:     "b/aaa.txt:2 carrot\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/aaa.txt"),
 			Type: "fileicon"}}}
@@ -211,7 +211,7 @@ func TestMissingFile(t *testing.T) {
 		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
-		Title:        "ccc.txt:4 beet\n",
+		Title:        "4 beet\n",
 		SubTitle:     "b/ccc.txt:4 beet\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
@@ -250,7 +250,7 @@ func TestLargeFile(t *testing.T) {
 		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
-		Title:        "bbb.txt:7617 turnip",
+		Title:        "7617 turnip",
 		SubTitle:     "b/bbb.txt:7617 turnip",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/bbb.txt"),
 			Type: "fileicon"}}}
@@ -278,7 +278,7 @@ func TestManyMatchesFile(t *testing.T) {
 		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
-		Title:        "ddd.txt:" + num + " broccoli\n",
+		Title:        num + " broccoli\n",
 		SubTitle:     "b/ddd.txt:" + num +" broccoli\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ddd.txt"),
 			Type: "fileicon"}}

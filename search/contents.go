@@ -3,7 +3,6 @@ package search
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 
 	"github.com/google/codesearch/index"
 	"github.com/google/codesearch/regexp"
@@ -19,10 +18,12 @@ type trigramSearch struct {
 }
 
 func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*regexp.Regexp) []uint32 {
-	fnames := make([]uint32, 0, len(post))
+	fnames := make([]uint32, 0, MaximumMatches)
 
 	// re-process file names.
-	for _, fileid := range post {
+	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
+		fileid := post[i]
+
 		name := ix.Name(fileid)
 		sname := ix.trimmer(name)
 
@@ -89,18 +90,17 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 
 	oo := make([]output.Entry, 0, len(matches))
 
-	// TODO(rjk): Do a better job of displaying long match strings.
-	// In particular, preserve the function name in function matches.
 	for _, m := range matches {
 		name := m.fn
 		// It would be nice if Alfred supported styled strings. Then, I
 		// could highlight the search results.
-		title := fmt.Sprintf("%s:%d %s", filepath.Base(name), m.lineno, m.matchLine)
+		title := fmt.Sprintf("%d %s", m.lineno, m.matchLine)
 
 		oo = append(oo, output.Entry{
 			Uid:      name + "/" + m.matchLine,
 			Arg:      fmt.Sprintf("%s:%d", name, m.lineno),
 			Title:    title,
+			// Need to t
 			SubTitle: fmt.Sprintf("%s:%d %s", ix.trimmer(name), m.lineno, m.matchLine),
 			Type:     "file",
 			Icon: output.AlfredIcon{
