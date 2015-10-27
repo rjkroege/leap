@@ -1,2 +1,5 @@
 leap
 leaprc
+.DS_Store
+coverage.out
+count.out
