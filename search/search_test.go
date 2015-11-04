@@ -110,7 +110,7 @@ func TestOneMatchContentQuery(t *testing.T) {
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "2 carrot\n",
-		SubTitle:     "b/aaa.txt:2 carrot\n",
+		SubTitle:     ".../aaa.txt:2 carrot\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/aaa.txt"),
 			Type: "fileicon"}}}
 
@@ -203,7 +203,6 @@ func TestMissingFile(t *testing.T) {
 	os.Rename("test_data/b/aaa.txt", "test_data/b/aaa.txt.missing")
 	defer os.Rename("test_data/b/aaa.txt.missing", "test_data/b/aaa.txt")
 
-	// One file contains carrot.
 	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt/beet\n"),
@@ -212,7 +211,7 @@ func TestMissingFile(t *testing.T) {
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "4 beet\n",
-		SubTitle:     "b/ccc.txt:4 beet\n",
+		SubTitle:     ".../ccc.txt:4 beet\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
 
@@ -251,7 +250,7 @@ func TestLargeFile(t *testing.T) {
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "7617 turnip",
-		SubTitle:     "b/bbb.txt:7617 turnip",
+		SubTitle:     ".../bbb.txt:7617 turnip",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/bbb.txt"),
 			Type: "fileicon"}}}
 
@@ -279,7 +278,7 @@ func TestManyMatchesFile(t *testing.T) {
 		Valid:        "",
 		AutoComplete: "",
 		Title:        num + " broccoli\n",
-		SubTitle:     "b/ddd.txt:" + num +" broccoli\n",
+		SubTitle:     ".../ddd.txt:" + num +" broccoli\n",
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ddd.txt"),
 			Type: "fileicon"}}
 	}

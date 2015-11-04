@@ -49,7 +49,6 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 
 	for {
 		n, err := io.ReadFull(f, buf[len(buf):cap(buf)])
-		log.Println("read chunk", len(buf), cap(buf), err)
 		buf = buf[:len(buf)+n]
 		end := len(buf)
 		if err == nil {
@@ -60,7 +59,6 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 
 		chunkStart := 0
 		for chunkStart < end {
-			log.Println("inner loop")
 			m1 := re.Match(buf[chunkStart:end], beginText, endText) + chunkStart
 			beginText = false
 			if m1 < chunkStart {
@@ -74,7 +72,6 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 			lineno += countNL(buf[chunkStart:lineStart])
 			line := buf[lineStart:lineEnd]
 
-			log.Println("len, cap ", len(matches), cap(matches))
 			if len(matches) == cap(matches) {
 				return matches, nil
 			}

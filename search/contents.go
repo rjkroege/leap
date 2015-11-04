@@ -3,6 +3,8 @@ package search
 import (
 	"fmt"
 	"log"
+	"path/filepath"
+	"strings"
 
 	"github.com/google/codesearch/index"
 	"github.com/google/codesearch/regexp"
@@ -84,9 +86,65 @@ func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error)
 	}
 }
 
+
+
+// findLongestPrefix determines the length of the longest
+// common prefix of the provided array of strings.
+func findLongestPrefix(names  []string) int {
+	if len(names) < 1 {
+		return 0
+	}
+	readers := make([]*strings.Reader, 0, len(names))
+	for _, m := range names {
+		readers = append(readers, strings.NewReader(m))
+	}
+
+	for {
+		rune0, _, err := readers[0].ReadRune()
+		if err != nil {
+			return int(readers[0].Size())
+		}
+		for _, re := range readers[1:] {
+			r, _, err := re.ReadRune()
+			if err != nil {
+				return int( re.Size())
+			}
+			if r != rune0 {
+				re.UnreadRune()
+				return int(re.Size()) - re.Len()
+			}
+		}
+	}
+	return 0
+}
+
+
+// nicelyTrimPath adjusts the given absolute path fn for
+// informative visual display by removing unnecessary
+// path components. fn is an absolute path, text before
+// cut should be discarded.
+func (ix *trigramSearch) nicelyTrimPath(fn string, cut int) string {
+	// Adjust for leading / after cutting.
+	if cut > 0 && fn[cut] == filepath.Separator && cut < len(fn) {
+		cut++
+	}
+	cutstring := fn[cut:]
+	trimstring := ix.trimmer(fn)
+	if len(cutstring) < len(trimstring) {
+		return ".../" + cutstring
+	}
+	return ".../" + trimstring
+}
+
 func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp) ([]output.Entry, error) {
 	// Search inside the files.
 	matches := multiFile(fnames, re, ix)
+
+	bn := make([]string, 0, len(matches))	
+	for _, m := range matches {
+		bn = append(bn, filepath.Dir(m.fn))
+	}
+	trimpoint := findLongestPrefix(bn)
 
 	oo := make([]output.Entry, 0, len(matches))
 
@@ -100,8 +158,7 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 			Uid:      name + "/" + m.matchLine,
 			Arg:      fmt.Sprintf("%s:%d", name, m.lineno),
 			Title:    title,
-			// Need to t
-			SubTitle: fmt.Sprintf("%s:%d %s", ix.trimmer(name), m.lineno, m.matchLine),
+			SubTitle: fmt.Sprintf("%s:%d %s", ix.nicelyTrimPath(name, trimpoint), m.lineno, m.matchLine),
 			Type:     "file",
 			Icon: output.AlfredIcon{
 				Filename: name,
