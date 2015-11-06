@@ -151,7 +151,7 @@ func main() {
 	} else {
 		gen := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
 		// TODO(rjk): error check
-		entries, _ = gen.Query(fn, stype, suffix)
+		entries, _ = gen.Query([]string{fn}, stype, []string{suffix})
 	}
 	output.WriteOut(os.Stdout, entries)
 }

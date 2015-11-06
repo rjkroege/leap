@@ -39,7 +39,7 @@ func TestNoMatchFileNameOnlyQuery(t *testing.T) {
 
 	// No files have z in them.
 	expected := []output.Entry{}
-	got, err := gen.Query(".*z.*", "", "")
+	got, err := gen.Query([]string{".*z.*"}, "", []string{""})
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
@@ -64,7 +64,7 @@ func TestOneMatchFileNameOnlyQuery(t *testing.T) {
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query(".*c.*", ":", "")
+	got, err := gen.Query([]string{".*c.*"}, ":", []string{""})
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
@@ -89,7 +89,7 @@ func TestOneMatchFileNameLineNumberQuery(t *testing.T) {
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query(".*c.*", ":", "2")
+	got, err := gen.Query([]string{".*c.*"}, ":", []string{"2"})
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
@@ -114,7 +114,7 @@ func TestOneMatchContentQuery(t *testing.T) {
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/aaa.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query("", "/", "carrot")
+	got, err := gen.Query([]string{""}, "/", []string{"carrot"})
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
@@ -127,7 +127,7 @@ func TestBadFileRegexp(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	// One file contains carrot.
-	_, err := gen.Query(")*", "/", "")
+	_, err := gen.Query([]string{")*"}, "/", []string{""})
 	if err == nil {
 		t.Errorf("unexpected absence of error on query: %v\n", err)
 	}
@@ -137,7 +137,7 @@ func TestBadContentRegexp(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	// One file contains carrot.
-	_, err := gen.Query("", "/", ")*")
+	_, err := gen.Query([]string{""}, "/", []string{")*"})
 	if err == nil {
 		t.Errorf("unexpected absence of error on query: %v\n", err)
 	}
@@ -161,7 +161,7 @@ func TestOneMatchFileNameLineNumberQueryWithPrefix(t *testing.T) {
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query(".*c.*", ":", "2")
+	got, err := gen.Query([]string{".*c.*"}, ":", []string{"2"})
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
@@ -188,7 +188,7 @@ func TestOneMatchFileNameLineNumberQueryWithSlashedPrefix(t *testing.T) {
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query(".*c.*", ":", "2")
+	got, err := gen.Query([]string{".*c.*"}, ":", []string{"2"})
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
@@ -220,7 +220,7 @@ func TestMissingFile(t *testing.T) {
 	log.SetOutput(txtlog)
 
 	// Run query
-	got, err := gen.Query("", "/", "beet")
+	got, err := gen.Query([]string{""}, "/", []string{"beet"})
 
 	// Put the log back.
 	log.SetOutput(os.Stderr)
@@ -254,7 +254,7 @@ func TestLargeFile(t *testing.T) {
 		Icon: output.AlfredIcon{Filename: tDir("test_data/b/bbb.txt"),
 			Type: "fileicon"}}}
 
-	got, err := gen.Query("", "/", "turnip")
+	got, err := gen.Query([]string{""}, "/", []string{"turnip"})
 
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)
@@ -283,7 +283,7 @@ func TestManyMatchesFile(t *testing.T) {
 			Type: "fileicon"}}
 	}
 
-	got, err := gen.Query("", "/", "broccoli")
+	got, err := gen.Query([]string{""}, "/", []string{"broccoli"})
 
 	if err != nil {
 		t.Errorf("unexpected error on query: %v\n", err)

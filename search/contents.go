@@ -44,7 +44,10 @@ func NewTrigramSearch(path string, prefixes []string) output.Generator {
 	return &trigramSearch{*index.Open(path), prefixes}
 }
 
-func (ix *trigramSearch) Query(fn, qtype, suffix string) ([]output.Entry, error) {
+func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]output.Entry, error) {
+	fn := fnl[0]
+	suffix := suffixl[0]
+
 	log.Printf("Query: %#v", qtype)
 
 	//	compile the filename regexp

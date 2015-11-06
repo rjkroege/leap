@@ -45,7 +45,7 @@ func BeginServing(config *base.Configuration)  {
 // Need to parse args myself.
 func (t *Server) Leap(query QueryBundle, resultBuffer *QueryResult) error {
 	log.Println("go leap remoted: ", query)
-	entries, err := t.search.Query(query.Fn, query.Stype, query.Suffix)
+	entries, err := t.search.Query([]string{query.Fn}, query.Stype, []string{query.Suffix})
 	log.Println(entries)
 	*resultBuffer = QueryResult{entries}
 	return err
