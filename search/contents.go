@@ -19,8 +19,7 @@ type trigramSearch struct {
 	prefixes []string
 }
 
-func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*regexp.Regexp) []uint32 {
-	fnames := make([]uint32, 0, MaximumMatches)
+func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*regexp.Regexp, fnames []uint32) []uint32{
 
 	// re-process file names.
 	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
@@ -45,27 +44,24 @@ func NewTrigramSearch(path string, prefixes []string) output.Generator {
 }
 
 func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]output.Entry, error) {
-	fn := fnl[0]
+//	fn := fnl[0]
 	suffix := suffixl[0]
 
 	log.Printf("Query: %#v", qtype)
-
-	//	compile the filename regexp
-	log.Println("fn", fn)
-	fre, err := regexp.Compile(fn)
-	if err != nil {
-		return nil, err
-	}
 
 	// TODO(rjk): code seems vaguely unclean
 	// Produce a list of filename, all or content-matches only.
 	var query *index.Query
 	var re *regexp.Regexp
 
+	// idea: I want some easy way to bound the number of responses
+	// I can look at the search complexity and switch to regep mode if
+	// it's insufficiently complicated.
 	if qtype == ":" {
 		query = &index.Query{Op: index.QAll}
 	} else {
 		pat := "(?m)" + suffix
+		var err error
 		re, err = regexp.Compile(pat)
 		if err != nil {
 			return nil, err
@@ -79,8 +75,16 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	}
 	post := ix.PostingQuery(query)
 
-	// TODO(rjk): abundant fuzzy matching improvements here.
-	fnames := ix.filterFileIndicesForRegexpMatch(post, fre)
+	fnames := make([]uint32, 0, MaximumMatches)
+	for _, fn := range fnl {
+		//	compile the filename regexp
+		log.Println("fn", fn)
+		fre, err := regexp.Compile(fn)
+		if err != nil {
+			return nil, err
+		}
+		fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames)
+	}
 
 	if qtype == ":" {
 		return ix.filenameResult(fnames, suffix)
@@ -88,8 +92,6 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 		return ix.contentSearchResult(fnames, re)
 	}
 }
-
-
 
 // findLongestPrefix determines the length of the longest
 // common prefix of the provided array of strings.
