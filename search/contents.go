@@ -19,12 +19,17 @@ type trigramSearch struct {
 	prefixes []string
 }
 
-func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*regexp.Regexp, fnames []uint32) []uint32{
+func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*regexp.Regexp, fnames []uint32, dedup map [uint32]struct{}) []uint32{
 
 	// re-process file names.
 	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
 		fileid := post[i]
 
+		if _, ok := dedup[fileid]; ok {
+			continue
+		}
+
+		// TODO(rjk): I am redoing (very cheap) work later.
 		name := ix.Name(fileid)
 		sname := ix.trimmer(name)
 
@@ -32,6 +37,7 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*rege
 			continue
 		}
 		fnames = append(fnames, fileid)
+		dedup[fileid] = struct{}{}
 	}
 	return fnames
 }
@@ -44,7 +50,6 @@ func NewTrigramSearch(path string, prefixes []string) output.Generator {
 }
 
 func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]output.Entry, error) {
-//	fn := fnl[0]
 	suffix := suffixl[0]
 
 	log.Printf("Query: %#v", qtype)
@@ -76,6 +81,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	post := ix.PostingQuery(query)
 
 	fnames := make([]uint32, 0, MaximumMatches)
+	dedup := make(map [uint32]struct{}, MaximumMatches)
 	for _, fn := range fnl {
 		//	compile the filename regexp
 		log.Println("fn", fn)
@@ -83,7 +89,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 		if err != nil {
 			return nil, err
 		}
-		fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames)
+		fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames, dedup)
 	}
 
 	if qtype == ":" {

@@ -23,9 +23,9 @@ func testIndex(t *testing.T) string {
 	return filepath.Join(filepath.Dir(thisFile), "test_index")
 }
 
-func tDir(rpath string) string {
+func tDir(rpath ...string) string {
 	_, thisFile, _, _ := runtime.Caller(0)
-	return filepath.Join(filepath.Dir(thisFile), rpath)
+	return filepath.Join(append([]string{filepath.Dir(thisFile)}, rpath...)...)
 }
 
 func TestGetTestDataPath(t *testing.T) {
@@ -293,3 +293,30 @@ func TestManyMatchesFile(t *testing.T) {
 	}
 }
 
+func TestMultiRegexpFileNameOnlyQuery(t *testing.T) {
+	gen := NewTrigramSearch(testIndex(t), nil)
+
+	expected := make([]output.Entry, 0)
+	for _, fn := range []string{"bbb.txt", "aaa.txt", "ccc.txt", "ddd.txt"} {
+		expected = append(expected, output.Entry{
+			XMLName: xml.Name{Space: "", 	Local: ""},
+			Uid:          tDir("test_data/b", fn),
+			Arg:          tDir("test_data/b", fn),
+			Type:         "file",
+			Valid:        "",
+			AutoComplete: "",
+			Title:        fn,
+			SubTitle:     "b/" + fn,
+			Icon: output.AlfredIcon{Filename: tDir("test_data/b", fn),
+				Type: "fileicon"},
+		})
+	}
+
+	got, err := gen.Query([]string{".*/bbb.*", ".*b.*"}, ":", []string{""})
+	if err != nil {
+		t.Errorf("unexpected error on query: %v\n", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got %#v exepcted %#v", got, expected)
+	}
+}
