@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var splitter = regexp.MustCompile("(([^@#:/]*/?[^@#:/]+)*)([@#:]|//)?([^@/#:]*)")
+var splitter = regexp.MustCompile("([^@#:]*)([@#:]?)(.*)")
 
 // chunkInput divides the given input into its before and after
 // separate portions.
@@ -16,14 +16,13 @@ func chunkInput(s string) (string, string, string) {
 	if matches == nil {
 		return "", "", ""
 	}
-	return matches[0][1], matches[0][3], matches[0][4]
+	return matches[0][1], matches[0][2], matches[0][3]
 }
 
 // fileExp transforms the given string into a regexp string
 // appropriate for file patterns. Not expected to generate
 // rational output on empty strings.
 func fileExp(s string) string {
-
 	subpaths := strings.Split(s, "/")
 	fuzzedpaths := make([]string, 0, len(subpaths))
 	for _, sp := range  subpaths {
@@ -32,6 +31,29 @@ func fileExp(s string) string {
 	}
 	return ".*" + strings.Join(fuzzedpaths, "/")  + ".*"
 }
+
+// fuzzyMatchers generates a sequence of matches of differing
+// fuzziness and returns the set of regexp strings.
+func fuzzyMatchers(s string) []string {
+	m := make([]string, 0)
+
+	// Filename only.
+	m = append(m,  s + "[^/]*$")
+
+	// Anywhere in the path.
+	m = append(m, s)
+
+	// Complete sub-paths rooted.
+	subpaths := strings.Split(s, "/")
+	m = append(m,  "^" + strings.Join(subpaths, "[^/]*/"))
+
+	// Complete sub-paths, not rooted.
+	m = append(m,  strings.Join(subpaths, "[^/]*/"))
+
+	m = append(m, fileExp(s))
+	return m	
+}
+
 
 func inLineExp(s string) string {
 	return ".*" + s  + ".*"
@@ -44,19 +66,22 @@ func symbolExp(s string) string {
 }
 
 // Parse generates query-language specific regexps and a query type.
-func Parse(s string) (string, string, string) {
+func Parse(s string) ([]string, string, string) {
 	prefix, sep, suffix := chunkInput(s)
 	switch sep {
 	case "@":
-		return fileExp(prefix), "/", symbolExp(suffix)
-	case "#", ":":
-		return fileExp(prefix), ":", numCheck(suffix)
-	case "/", "//": 
-		return fileExp(prefix), "/", inLineExp(suffix)
+		return fuzzyMatchers(prefix), "/", symbolExp(suffix)
+	case "#":
+		return fuzzyMatchers(prefix), ":", numCheck(suffix)
+	case ":":
+		if suffix[0] == '/' {
+			return fuzzyMatchers(prefix), "/", inLineExp(suffix[1:])
+		}
+		return fuzzyMatchers(prefix), ":", numCheck(suffix)
 	case "":
-		return fileExp(prefix), ":", ""
+		return fuzzyMatchers(prefix), ":", ""
 	}
-	return "", "", ""
+	return []string{""}, "", ""
 }
 
 func numCheck(s string) string {

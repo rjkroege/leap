@@ -33,9 +33,11 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*rege
 		name := ix.Name(fileid)
 		sname := ix.trimmer(name)
 
+
 		if fre.MatchString(sname, true, true) < 0 {
 			continue
 		}
+		log.Println(sname)
 		fnames = append(fnames, fileid)
 		dedup[fileid] = struct{}{}
 	}
@@ -84,7 +86,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	dedup := make(map [uint32]struct{}, MaximumMatches)
 	for _, fn := range fnl {
 		//	compile the filename regexp
-		log.Println("fn", fn)
+		log.Println("regexp:", fn)
 		fre, err := regexp.Compile(fn)
 		if err != nil {
 			return nil, err
