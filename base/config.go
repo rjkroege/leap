@@ -10,6 +10,9 @@ import (
 	"github.com/google/codesearch/index"
 )
 
+// See package comment for why we have this amusing string.
+const Prefix = ".leapingglenda"
+
 // TODO(rjk): Do I need the attributes?
 type Configuration struct {
 	Hostname string

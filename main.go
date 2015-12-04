@@ -36,6 +36,10 @@ var (
 		"Update the configuration file to specify that leap should operate in local mode. Only one of -local and -remote can be specified.")
 	setprefix = flag.Bool("setprefix", false,
 		"Set the path trimming prefixes to the given paths.")
+	decodePlumb = flag.Bool("dp", false,
+		"Decode the single provided path and convert it back into a valid plumb address");
+	decodeFile = flag.Bool("df", false,
+		"Decode the single provided path and convert it back into a valid file address");
 )
 
 func LogToTemp() func() {
@@ -109,6 +113,20 @@ func main() {
 	}
 
 	switch {
+	case *decodePlumb:
+		if flag.NArg() != 1 {
+			flag.Usage()
+			os.Exit(0)			
+		}
+		fmt.Println(input.EncodedToPlumb(flag.Arg(0)))
+		os.Exit(0)
+	case *decodeFile:
+		if flag.NArg() != 1 {
+			flag.Usage()
+			os.Exit(0)			
+		}
+		fmt.Println(input.EncodedToFile(flag.Arg(0)))
+		os.Exit(0)
 	case *runServer:
 		fmt.Fprintln(os.Stderr, "go run as server")
 		config, err := base.GetConfiguration(base.Filepath(*testlog))

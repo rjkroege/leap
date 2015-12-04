@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/output"
 )
 
@@ -26,6 +27,11 @@ func testIndex(t *testing.T) string {
 func tDir(rpath ...string) string {
 	_, thisFile, _, _ := runtime.Caller(0)
 	return filepath.Join(append([]string{filepath.Dir(thisFile)}, rpath...)...)
+}
+
+func pDir(num int, rpath ...string) string {
+	_, thisFile, _, _ := runtime.Caller(0)
+	return filepath.Join(append([]string{fmt.Sprintf("/%s:%d", base.Prefix, num), filepath.Dir(thisFile)}, rpath...)...)
 }
 
 func TestGetTestDataPath(t *testing.T) {
@@ -104,9 +110,9 @@ func TestOneMatchContentQuery(t *testing.T) {
 	// One file contains carrot.
 	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
-		Uid:          tDir("test_data/b/aaa.txt/carrot\n"),
-		Arg:          tDir("test_data/b/aaa.txt:2"),
-		Type:         "file",
+		Uid:          tDir("test_data/b/aaa.txt:2"),
+		Arg:          pDir(2, "test_data/b/aaa.txt"),
+		Type:         "file:skipcheck",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "2 carrot\n",
@@ -205,9 +211,9 @@ func TestMissingFile(t *testing.T) {
 
 	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
-		Uid:          tDir("test_data/b/ccc.txt/beet\n"),
-		Arg:          tDir("test_data/b/ccc.txt:4"),
-		Type:         "file",
+		Uid:          tDir("test_data/b/ccc.txt:4"),
+		Arg:          pDir(4, "test_data/b/ccc.txt"),
+		Type:         "file:skipcheck",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "4 beet\n",
@@ -244,9 +250,9 @@ func TestLargeFile(t *testing.T) {
 	// One file contains carrot.
 	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
-		Uid:          tDir("test_data/b/bbb.txt/turnip"),
-		Arg:          tDir("test_data/b/bbb.txt:7617"),
-		Type:         "file",
+		Uid:          tDir("test_data/b/bbb.txt:7617"),
+		Arg:          pDir(7617, "test_data/b/bbb.txt"),
+		Type:         "file:skipcheck",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "7617 turnip",
@@ -272,9 +278,9 @@ func TestManyMatchesFile(t *testing.T) {
 		num := fmt.Sprintf("%d", i + 1)
 		expected[i] = output.Entry{XMLName: xml.Name{Space: "",
 		Local: ""},
-		Uid:          tDir("test_data/b/ddd.txt/broccoli\n"),
-		Arg:          tDir("test_data/b/ddd.txt:" + num),
-		Type:         "file",
+		Uid:          tDir("test_data/b/ddd.txt:" + num),
+		Arg:          pDir(i+1, "test_data/b/ddd.txt"),
+		Type:         "file:skipcheck",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        num + " broccoli\n",

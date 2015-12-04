@@ -9,6 +9,7 @@ import (
 	"github.com/google/codesearch/index"
 	"github.com/google/codesearch/regexp"
 
+	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/output"
 )
 
@@ -168,11 +169,11 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 		title := fmt.Sprintf("%d %s", m.lineno, m.matchLine)
 
 		oo = append(oo, output.Entry{
-			Uid:      name + "/" + m.matchLine,
-			Arg:      fmt.Sprintf("%s:%d", name, m.lineno),
+			Uid:      fmt.Sprintf("%s:%d", name, m.lineno),
+			Arg:      fmt.Sprintf( "/%s:%d%s", base.Prefix, m.lineno, name),
 			Title:    title,
 			SubTitle: fmt.Sprintf("%s:%d %s", ix.nicelyTrimPath(name, trimpoint), m.lineno, m.matchLine),
-			Type:     "file",
+			Type:     "file:skipcheck",
 			Icon: output.AlfredIcon{
 				Filename: name,
 				Type: "fileicon",
