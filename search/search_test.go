@@ -31,7 +31,7 @@ func tDir(rpath ...string) string {
 
 func pDir(num int, rpath ...string) string {
 	_, thisFile, _, _ := runtime.Caller(0)
-	return filepath.Join(append([]string{fmt.Sprintf("/%s:%d", base.Prefix, num), filepath.Dir(thisFile)}, rpath...)...)
+	return "/" + filepath.Join(append([]string{fmt.Sprintf("/%s:%d", base.Prefix, num), filepath.Dir(thisFile)}, rpath...)...)
 }
 
 func TestGetTestDataPath(t *testing.T) {
@@ -112,7 +112,7 @@ func TestOneMatchContentQuery(t *testing.T) {
 		Local: ""},
 		Uid:          tDir("test_data/b/aaa.txt:2"),
 		Arg:          pDir(2, "test_data/b/aaa.txt"),
-		Type:         "file:skipcheck",
+		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "2 carrot\n",
@@ -213,7 +213,7 @@ func TestMissingFile(t *testing.T) {
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt:4"),
 		Arg:          pDir(4, "test_data/b/ccc.txt"),
-		Type:         "file:skipcheck",
+		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "4 beet\n",
@@ -252,7 +252,7 @@ func TestLargeFile(t *testing.T) {
 		Local: ""},
 		Uid:          tDir("test_data/b/bbb.txt:7617"),
 		Arg:          pDir(7617, "test_data/b/bbb.txt"),
-		Type:         "file:skipcheck",
+		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        "7617 turnip",
@@ -280,7 +280,7 @@ func TestManyMatchesFile(t *testing.T) {
 		Local: ""},
 		Uid:          tDir("test_data/b/ddd.txt:" + num),
 		Arg:          pDir(i+1, "test_data/b/ddd.txt"),
-		Type:         "file:skipcheck",
+		Type:         "file",
 		Valid:        "",
 		AutoComplete: "",
 		Title:        num + " broccoli\n",

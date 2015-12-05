@@ -2,7 +2,9 @@ package search
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -167,18 +169,50 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 		// It would be nice if Alfred supported styled strings. Then, I
 		// could highlight the search results.
 		title := fmt.Sprintf("%d %s", m.lineno, m.matchLine)
+		arg := fmt.Sprintf( "/%s:%d%s", base.Prefix, m.lineno, name)
 
 		oo = append(oo, output.Entry{
 			Uid:      fmt.Sprintf("%s:%d", name, m.lineno),
-			Arg:      fmt.Sprintf( "/%s:%d%s", base.Prefix, m.lineno, name),
+			Arg:      arg,
 			Title:    title,
 			SubTitle: fmt.Sprintf("%s:%d %s", ix.nicelyTrimPath(name, trimpoint), m.lineno, m.matchLine),
-			Type:     "file:skipcheck",
+			Type:     "file",
 			Icon: output.AlfredIcon{
 				Filename: name,
 				Type: "fileicon",
 			},
 		})
+
+		// Copy the content to the prefix.
+		dir := filepath.Dir(arg)
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			log.Println(dir, err)
+			continue
+		}
+		if err := fileCopy(name, arg); err != nil {
+			log.Println(name, arg, err)
+			continue
+		}		
 	}
 	return oo, nil
+}
+
+func fileCopy(a, b string) error {
+    sFile, err := os.Open(a)
+    if err != nil {
+	return err
+    }
+    defer sFile.Close()
+
+    eFile, err := os.Create(b)
+    if err != nil {
+	return err
+    }
+    defer eFile.Close()
+
+    _, err = io.Copy(eFile, sFile) // first var shows number of bytes
+    if err != nil {
+	return err
+    }
+	return nil   
 }

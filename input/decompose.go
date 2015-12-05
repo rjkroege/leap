@@ -33,7 +33,7 @@ import (
 	"github.com/rjkroege/leap/base"
 )
 
-var decoder = regexp.MustCompile("(/" + base.Prefix + ":([0-9]+))?(.*)")
+var decoder = regexp.MustCompile("(/*" + base.Prefix + ":([0-9]+))?(.*)")
 
 // EncodedToPlumb takes the given string and converts
 // to a plumb string.

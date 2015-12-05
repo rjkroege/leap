@@ -114,13 +114,17 @@ func main() {
 
 	switch {
 	case *decodePlumb:
+		log.Println("running decodePlumb")
+		os.RemoveAll(base.SubPrefix)
 		if flag.NArg() != 1 {
 			flag.Usage()
 			os.Exit(0)			
 		}
+		log.Println("output", input.EncodedToPlumb(flag.Arg(0)))
 		fmt.Println(input.EncodedToPlumb(flag.Arg(0)))
 		os.Exit(0)
 	case *decodeFile:
+		os.RemoveAll(base.SubPrefix)
 		if flag.NArg() != 1 {
 			flag.Usage()
 			os.Exit(0)			
@@ -149,6 +153,7 @@ func main() {
 
 	// May exit.
 	updateConfigIfNecessary(flag.Args())
+	os.RemoveAll(base.SubPrefix)
 
 	config, err := base.GetConfiguration(base.Filepath(*testlog))
 	if err != nil {

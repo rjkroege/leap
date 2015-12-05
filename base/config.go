@@ -11,7 +11,8 @@ import (
 )
 
 // See package comment for why we have this amusing string.
-const Prefix = ".leapingglenda"
+const Prefix = "/tmp/.leaping/glenda"
+const SubPrefix = "/tmp/.leaping"
 
 // TODO(rjk): Do I need the attributes?
 type Configuration struct {
