@@ -7,12 +7,12 @@
 // Leap's search syntax: <path>[:number] | [<path>][:/<search>]. The
 // path will filter the list of files to those that match (fuzzily) the
 // provided path. The search string can be any valid regexp.
-// 
+//
 // Leap's output is intended to be used in an Alfred app workflow.
 // Amongst other content, the arg value for each entry ends being
 // used in two different fashions: as an argument to a follow-on
 // workflow element that opens files and as a file path argument to
-// the quicklook facility. 
+// the quicklook facility.
 //
 // The intended usage of leap is to provide arg strings that are valid
 // input to the Plan9 plumber: <path>[:number]. If the number is

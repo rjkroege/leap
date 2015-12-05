@@ -149,22 +149,22 @@ func TestParse(t *testing.T) {
 	}
 
 	a, s, b = Parse("a@b")
-	if ea, es, eb := []string{"a[^/]*$", "a", "^a", "a", ".*a.*"}, "/", "(func|type|var|const).*b[a-zA-Z_0-9]*";  !reflect.DeepEqual(a, ea) || b != eb || s != es {
+	if ea, es, eb := []string{"a[^/]*$", "a", "^a", "a", ".*a.*"}, "/", "(func|type|var|const).*b[a-zA-Z_0-9]*"; !reflect.DeepEqual(a, ea) || b != eb || s != es {
 		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
 	}
 
 	a, s, b = Parse("a:10")
-	if ea, es, eb := []string{"a[^/]*$", "a", "^a", "a", ".*a.*"}, ":", "10";  !reflect.DeepEqual(a, ea) || b != eb || s != es {
+	if ea, es, eb := []string{"a[^/]*$", "a", "^a", "a", ".*a.*"}, ":", "10"; !reflect.DeepEqual(a, ea) || b != eb || s != es {
 		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
 	}
 
 	a, s, b = Parse("a")
-	if ea, es, eb := []string{"a[^/]*$", "a", "^a", "a", ".*a.*"}, ":", "";  !reflect.DeepEqual(a, ea) || b != eb || s != es {
+	if ea, es, eb := []string{"a[^/]*$", "a", "^a", "a", ".*a.*"}, ":", ""; !reflect.DeepEqual(a, ea) || b != eb || s != es {
 		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
 	}
 
 	a, s, b = Parse("a/")
-	if ea, es, eb := []string{"a/[^/]*$", "a/", "^a[^/]*/", "a[^/]*/", ".*a/.*"}, ":", "";  !reflect.DeepEqual(a, ea) || b != eb || s != es {
+	if ea, es, eb := []string{"a/[^/]*$", "a/", "^a[^/]*/", "a[^/]*/", ".*a/.*"}, ":", ""; !reflect.DeepEqual(a, ea) || b != eb || s != es {
 		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
 	}
 }
@@ -172,16 +172,16 @@ func TestParse(t *testing.T) {
 func TestFuzzyMatchers(t *testing.T) {
 	a := fuzzyMatchers("abc")
 	if ea := []string{"abc[^/]*$", "abc", "^abc", "abc", ".*a.*b.*c.*"}; !reflect.DeepEqual(a, ea) {
-		t.Errorf("got %#v, exepcted %#v", a,ea)
+		t.Errorf("got %#v, exepcted %#v", a, ea)
 	}
 
 	a = fuzzyMatchers("abc/def")
 	if ea := []string{"abc/def[^/]*$", "abc/def", "^abc[^/]*/def", "abc[^/]*/def", ".*a.*b.*c/d.*e.*f.*"}; !reflect.DeepEqual(a, ea) {
-		t.Errorf("got %#v, exepcted %#v", a,ea)
+		t.Errorf("got %#v, exepcted %#v", a, ea)
 	}
 
 	a = fuzzyMatchers("abc/")
 	if ea := []string{"abc/[^/]*$", "abc/", "^abc[^/]*/", "abc[^/]*/", ".*a.*b.*c/.*"}; !reflect.DeepEqual(a, ea) {
-		t.Errorf("got %#v, exepcted %#v", a,ea)
+		t.Errorf("got %#v, exepcted %#v", a, ea)
 	}
 }

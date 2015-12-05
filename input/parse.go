@@ -25,11 +25,11 @@ func chunkInput(s string) (string, string, string) {
 func fileExp(s string) string {
 	subpaths := strings.Split(s, "/")
 	fuzzedpaths := make([]string, 0, len(subpaths))
-	for _, sp := range  subpaths {
+	for _, sp := range subpaths {
 		ex := strings.Split(sp, "")
 		fuzzedpaths = append(fuzzedpaths, strings.Join(ex, ".*"))
 	}
-	return ".*" + strings.Join(fuzzedpaths, "/")  + ".*"
+	return ".*" + strings.Join(fuzzedpaths, "/") + ".*"
 }
 
 // fuzzyMatchers generates a sequence of matches of differing
@@ -38,25 +38,24 @@ func fuzzyMatchers(s string) []string {
 	m := make([]string, 0)
 
 	// Filename only.
-	m = append(m,  s + "[^/]*$")
+	m = append(m, s+"[^/]*$")
 
 	// Anywhere in the path.
 	m = append(m, s)
 
 	// Complete sub-paths rooted.
 	subpaths := strings.Split(s, "/")
-	m = append(m,  "^" + strings.Join(subpaths, "[^/]*/"))
+	m = append(m, "^"+strings.Join(subpaths, "[^/]*/"))
 
 	// Complete sub-paths, not rooted.
-	m = append(m,  strings.Join(subpaths, "[^/]*/"))
+	m = append(m, strings.Join(subpaths, "[^/]*/"))
 
 	m = append(m, fileExp(s))
-	return m	
+	return m
 }
 
-
 func inLineExp(s string) string {
-	return ".*" + s  + ".*"
+	return ".*" + s + ".*"
 }
 
 // symbolExp returns a regexp to find symbols in Golang source.
