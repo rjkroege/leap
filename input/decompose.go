@@ -33,7 +33,7 @@ import (
 	"github.com/rjkroege/leap/base"
 )
 
-var decoder = regexp.MustCompile("(/*" + base.Prefix + ":([0-9]+))?(.*)")
+var decoder = regexp.MustCompile("(.*" + base.Prefix + ":([0-9]+))?(.*)")
 
 // EncodedToPlumb takes the given string and converts
 // to a plumb string.
@@ -57,4 +57,14 @@ func EncodedToFile(s string) string {
 		return ""
 	}
 	return matches[0][3]
+}
+
+// EncodedToNumber takes the given string and removes
+// the prefix, returning only the desired line number.
+func EncodedToNumber(s string) string {
+	matches := decoder.FindAllStringSubmatch(s, -1)
+	if matches == nil {
+		return ""
+	}
+	return matches[0][2]
 }

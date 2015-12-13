@@ -29,3 +29,17 @@ func TestEncodedToFile(t *testing.T) {
 		t.Errorf("got %#v exepcted %#v", a, ea)
 	}
 }
+
+func TestEncodedToNumber(t *testing.T) {
+	if a, ea := EncodedToNumber("/ab"), ""; a != ea {
+		t.Errorf("got %#v exepcted %#v", a, ea)
+	}
+
+	if a, ea := EncodedToNumber("/"+base.Prefix+":100/ab"), "100"; a != ea {
+		t.Errorf("got %#v exepcted %#v", a, ea)
+	}
+
+	if a, ea := EncodedToNumber("/private"+base.Prefix+":100/ab"), "100"; a != ea {
+		t.Errorf("got %#v exepcted %#v", a, ea)
+	}
+}

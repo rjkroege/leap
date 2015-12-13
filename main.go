@@ -8,11 +8,12 @@ import (
 	"os"
 
 	"github.com/rjkroege/leap/base"
+	"github.com/rjkroege/leap/client"
+	"github.com/rjkroege/leap/highlights"
 	"github.com/rjkroege/leap/input"
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 	"github.com/rjkroege/leap/server"
-	"github.com/rjkroege/leap/client"
 )
 
 // TODO(rjk): It is conceivable that I will want to support having a re-writing
@@ -23,9 +24,9 @@ var (
 	testlog = flag.Bool("testlog", false,
 		"Log in the conventional way for running in a terminal. Also changes where to find the configuration file.")
 	runServer = flag.Bool("server", false, "Run as a server. If a server is already running, does nothing.")
-	stop = flag.Bool("stop", false, "Connect to the configured server and stop it.")
-	index = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
-	host = flag.String("host", "", "Configure hostname for server. Empty host is short-circuited to operate in-memory.")
+	stop      = flag.Bool("stop", false, "Connect to the configured server and stop it.")
+	index     = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
+	host      = flag.String("host", "", "Configure hostname for server. Empty host is short-circuited to operate in-memory.")
 	indexpath = flag.String("indexpath", "",
 		"Configure the path to the index file. Use CSEARCHINDEX if not provided. Client-only invocations ignore the configured index path.")
 	resetpath = flag.Bool("resetpath", false,
@@ -37,9 +38,9 @@ var (
 	setprefix = flag.Bool("setprefix", false,
 		"Set the path trimming prefixes to the given paths.")
 	decodePlumb = flag.Bool("dp", false,
-		"Decode the single provided path and convert it back into a valid plumb address");
-	decodeFile = flag.Bool("df", false,
-		"Decode the single provided path and convert it back into a valid file address");
+		"Decode the single provided path and convert it back into a valid plumb address")
+	highlightFile = flag.Bool("hf", false,
+		"Reprocess the output of highlight marking the line extracted from the provided encoded path")
 )
 
 func LogToTemp() func() {
@@ -118,18 +119,20 @@ func main() {
 		os.RemoveAll(base.SubPrefix)
 		if flag.NArg() != 1 {
 			flag.Usage()
-			os.Exit(0)			
+			os.Exit(0)
 		}
 		log.Println("output", input.EncodedToPlumb(flag.Arg(0)))
 		fmt.Println(input.EncodedToPlumb(flag.Arg(0)))
 		os.Exit(0)
-	case *decodeFile:
-		os.RemoveAll(base.SubPrefix)
+	case *highlightFile:
+		log.Println("running highlightFile", flag.Arg(0))
 		if flag.NArg() != 1 {
 			flag.Usage()
-			os.Exit(0)			
+			os.Exit(0)
 		}
-		fmt.Println(input.EncodedToFile(flag.Arg(0)))
+		if err := highlights.ShowDesiredLineInFile(input.EncodedToNumber(flag.Arg(0)), os.Stdin, os.Stdout); err != nil {
+			log.Println("ShowDesiredLine... failed ", err)
+		}
 		os.Exit(0)
 	case *runServer:
 		fmt.Fprintln(os.Stderr, "go run as server")
@@ -164,12 +167,12 @@ func main() {
 
 	fn, stype, suffix := input.Parse(flag.Arg(0))
 
-	var entries  []output.Entry
+	var entries []output.Entry
 
 	if config.Connect {
 		entries, err = client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
 		if err != nil {
-			log.Fatalln("problem connecting to server: ", err);
+			log.Fatalln("problem connecting to server: ", err)
 		}
 	} else {
 		gen := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
