@@ -178,8 +178,7 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 			SubTitle: fmt.Sprintf("%s:%d %s", ix.nicelyTrimPath(name, trimpoint), m.lineno, m.matchLine),
 			Type:     "file",
 			Icon: output.AlfredIcon{
-				Filename: name,
-				Type: "fileicon",
+				Filename: determineIconString(name),
 			},
 		})
 

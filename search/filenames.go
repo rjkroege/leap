@@ -51,8 +51,7 @@ func (ix *trigramSearch) filenameResult(fnames []uint32, suffix string) ([]outpu
 
 			Type: "file",
 			Icon: output.AlfredIcon{
-				Filename: name,
-				Type: "fileicon",
+				Filename: determineIconString(name),
 			},
 		})
 	}
