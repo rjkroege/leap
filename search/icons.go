@@ -10,7 +10,7 @@ func determineIconString(name string) string {
 
 	switch path.Ext(name) {
 	case ".cpp", "cc":
-		return 	"/Applications/Xcode.app/Contents/Resources/c-plus-plus-source_Icon.icns"
+		return "/Applications/Xcode.app/Contents/Resources/c-plus-plus-source_Icon.icns"
 	case ".h", ".hpp":
 		return "/Applications/Xcode.app/Contents/Resources/c-header_Icon.icns"
 	case ".css":
@@ -23,6 +23,9 @@ func determineIconString(name string) string {
 		return "/Applications/Marked 2.app/Contents/Resources/DocumentIcon.icns"
 	case ".go":
 		return "golang.icns"
+	case ".text", ".txt":
+		return "/Applications/TextEdit.app/Contents/Resources/txt.icns"
 	}
+
 	return ""
 }

@@ -15,13 +15,13 @@ func (ix *trigramSearch) trimmer(fs string) string {
 	if ix.prefixes != nil {
 		paths = ix.prefixes
 	}
-	
+
 	for _, p := range paths {
 		// Probably wrong on windows.
 		if p[len(p)-1] == '/' {
 			fs = strings.TrimPrefix(fs, p)
 		} else {
-			fs = strings.TrimPrefix(fs, p + "/")
+			fs = strings.TrimPrefix(fs, p+"/")
 		}
 	}
 	return fs

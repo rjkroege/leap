@@ -22,7 +22,7 @@ type trigramSearch struct {
 	prefixes []string
 }
 
-func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*regexp.Regexp, fnames []uint32, dedup map [uint32]struct{}) []uint32{
+func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre *regexp.Regexp, fnames []uint32, dedup map[uint32]struct{}) []uint32 {
 
 	// re-process file names.
 	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
@@ -35,7 +35,6 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre*rege
 		// TODO(rjk): I am redoing (very cheap) work later.
 		name := ix.Name(fileid)
 		sname := ix.trimmer(name)
-
 
 		if fre.MatchString(sname, true, true) < 0 {
 			continue
@@ -86,7 +85,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	post := ix.PostingQuery(query)
 
 	fnames := make([]uint32, 0, MaximumMatches)
-	dedup := make(map [uint32]struct{}, MaximumMatches)
+	dedup := make(map[uint32]struct{}, MaximumMatches)
 	for _, fn := range fnl {
 		//	compile the filename regexp
 		log.Println("regexp:", fn)
@@ -106,7 +105,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 
 // findLongestPrefix determines the length of the longest
 // common prefix of the provided array of strings.
-func findLongestPrefix(names  []string) int {
+func findLongestPrefix(names []string) int {
 	if len(names) < 1 {
 		return 0
 	}
@@ -123,7 +122,7 @@ func findLongestPrefix(names  []string) int {
 		for _, re := range readers[1:] {
 			r, _, err := re.ReadRune()
 			if err != nil {
-				return int( re.Size())
+				return int(re.Size())
 			}
 			if r != rune0 {
 				re.UnreadRune()
@@ -133,7 +132,6 @@ func findLongestPrefix(names  []string) int {
 	}
 	return 0
 }
-
 
 // nicelyTrimPath adjusts the given absolute path fn for
 // informative visual display by removing unnecessary
@@ -156,7 +154,7 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 	// Search inside the files.
 	matches := multiFile(fnames, re, ix)
 
-	bn := make([]string, 0, len(matches))	
+	bn := make([]string, 0, len(matches))
 	for _, m := range matches {
 		bn = append(bn, filepath.Dir(m.fn))
 	}
@@ -169,7 +167,7 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 		// It would be nice if Alfred supported styled strings. Then, I
 		// could highlight the search results.
 		title := fmt.Sprintf("%d %s", m.lineno, m.matchLine)
-		arg := fmt.Sprintf( "/%s:%d%s", base.Prefix, m.lineno, name)
+		arg := fmt.Sprintf("/%s:%d%s", base.Prefix, m.lineno, name)
 
 		oo = append(oo, output.Entry{
 			Uid:      fmt.Sprintf("%s:%d", name, m.lineno),
@@ -191,27 +189,27 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 		if err := fileCopy(name, arg); err != nil {
 			log.Println(name, arg, err)
 			continue
-		}		
+		}
 	}
 	return oo, nil
 }
 
 func fileCopy(a, b string) error {
-    sFile, err := os.Open(a)
-    if err != nil {
-	return err
-    }
-    defer sFile.Close()
+	sFile, err := os.Open(a)
+	if err != nil {
+		return err
+	}
+	defer sFile.Close()
 
-    eFile, err := os.Create(b)
-    if err != nil {
-	return err
-    }
-    defer eFile.Close()
+	eFile, err := os.Create(b)
+	if err != nil {
+		return err
+	}
+	defer eFile.Close()
 
-    _, err = io.Copy(eFile, sFile) // first var shows number of bytes
-    if err != nil {
-	return err
-    }
-	return nil   
+	_, err = io.Copy(eFile, sFile) // first var shows number of bytes
+	if err != nil {
+		return err
+	}
+	return nil
 }

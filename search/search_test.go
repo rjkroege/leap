@@ -3,8 +3,8 @@ package search
 import (
 	"bytes"
 	"encoding/xml"
-	"log"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -67,8 +67,8 @@ func TestOneMatchFileNameOnlyQuery(t *testing.T) {
 		AutoComplete: "",
 		Title:        "ccc.txt",
 		SubTitle:     "b/ccc.txt",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"},
+	}}
 
 	got, err := gen.Query([]string{".*c.*"}, ":", []string{""})
 	if err != nil {
@@ -92,8 +92,7 @@ func TestOneMatchFileNameLineNumberQuery(t *testing.T) {
 		AutoComplete: "",
 		Title:        "ccc.txt:2",
 		SubTitle:     "b/ccc.txt:2",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}}
 
 	got, err := gen.Query([]string{".*c.*"}, ":", []string{"2"})
 	if err != nil {
@@ -117,8 +116,7 @@ func TestOneMatchContentQuery(t *testing.T) {
 		AutoComplete: "",
 		Title:        "2 carrot\n",
 		SubTitle:     ".../aaa.txt:2 carrot\n",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/aaa.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}}
 
 	got, err := gen.Query([]string{""}, "/", []string{"carrot"})
 	if err != nil {
@@ -164,8 +162,7 @@ func TestOneMatchFileNameLineNumberQueryWithPrefix(t *testing.T) {
 		AutoComplete: "",
 		Title:        "ccc.txt:2",
 		SubTitle:     "test_data/b/ccc.txt:2",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}}
 
 	got, err := gen.Query([]string{".*c.*"}, ":", []string{"2"})
 	if err != nil {
@@ -178,7 +175,7 @@ func TestOneMatchFileNameLineNumberQueryWithPrefix(t *testing.T) {
 
 func TestOneMatchFileNameLineNumberQueryWithSlashedPrefix(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), []string{
-		tDir("")  + "/",
+		tDir("") + "/",
 	})
 
 	// One file has c in the name.
@@ -191,8 +188,7 @@ func TestOneMatchFileNameLineNumberQueryWithSlashedPrefix(t *testing.T) {
 		AutoComplete: "",
 		Title:        "ccc.txt:2",
 		SubTitle:     "test_data/b/ccc.txt:2",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}}
 
 	got, err := gen.Query([]string{".*c.*"}, ":", []string{"2"})
 	if err != nil {
@@ -218,8 +214,7 @@ func TestMissingFile(t *testing.T) {
 		AutoComplete: "",
 		Title:        "4 beet\n",
 		SubTitle:     ".../ccc.txt:4 beet\n",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ccc.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}}
 
 	// Inject log
 	txtlog := new(bytes.Buffer)
@@ -257,8 +252,7 @@ func TestLargeFile(t *testing.T) {
 		AutoComplete: "",
 		Title:        "7617 turnip",
 		SubTitle:     ".../bbb.txt:7617 turnip",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/bbb.txt"),
-			Type: "fileicon"}}}
+		Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}}
 
 	got, err := gen.Query([]string{""}, "/", []string{"turnip"})
 
@@ -275,18 +269,17 @@ func TestManyMatchesFile(t *testing.T) {
 
 	expected := make([]output.Entry, MaximumMatches)
 	for i, _ := range expected {
-		num := fmt.Sprintf("%d", i + 1)
+		num := fmt.Sprintf("%d", i+1)
 		expected[i] = output.Entry{XMLName: xml.Name{Space: "",
-		Local: ""},
-		Uid:          tDir("test_data/b/ddd.txt:" + num),
-		Arg:          pDir(i+1, "test_data/b/ddd.txt"),
-		Type:         "file",
-		Valid:        "",
-		AutoComplete: "",
-		Title:        num + " broccoli\n",
-		SubTitle:     ".../ddd.txt:" + num +" broccoli\n",
-		Icon: output.AlfredIcon{Filename: tDir("test_data/b/ddd.txt"),
-			Type: "fileicon"}}
+			Local: ""},
+			Uid:          tDir("test_data/b/ddd.txt:" + num),
+			Arg:          pDir(i+1, "test_data/b/ddd.txt"),
+			Type:         "file",
+			Valid:        "",
+			AutoComplete: "",
+			Title:        num + " broccoli\n",
+			SubTitle:     ".../ddd.txt:" + num + " broccoli\n",
+			Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"}}
 	}
 
 	got, err := gen.Query([]string{""}, "/", []string{"broccoli"})
@@ -305,7 +298,7 @@ func TestMultiRegexpFileNameOnlyQuery(t *testing.T) {
 	expected := make([]output.Entry, 0)
 	for _, fn := range []string{"bbb.txt", "aaa.txt", "ccc.txt", "ddd.txt"} {
 		expected = append(expected, output.Entry{
-			XMLName: xml.Name{Space: "", 	Local: ""},
+			XMLName:      xml.Name{Space: "", Local: ""},
 			Uid:          tDir("test_data/b", fn),
 			Arg:          tDir("test_data/b", fn),
 			Type:         "file",
@@ -313,8 +306,7 @@ func TestMultiRegexpFileNameOnlyQuery(t *testing.T) {
 			AutoComplete: "",
 			Title:        fn,
 			SubTitle:     "b/" + fn,
-			Icon: output.AlfredIcon{Filename: tDir("test_data/b", fn),
-				Type: "fileicon"},
+			Icon:         output.AlfredIcon{Filename: "/Applications/TextEdit.app/Contents/Resources/txt.icns"},
 		})
 	}
 
