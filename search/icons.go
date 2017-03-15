@@ -9,7 +9,7 @@ import (
 func determineIconString(name string) string {
 
 	switch path.Ext(name) {
-	case ".cpp", "cc":
+	case ".cpp", ".cc":
 		return "/Applications/Xcode.app/Contents/Resources/c-plus-plus-source_Icon.icns"
 	case ".h", ".hpp":
 		return "/Applications/Xcode.app/Contents/Resources/c-header_Icon.icns"
