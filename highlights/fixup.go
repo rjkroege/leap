@@ -17,7 +17,6 @@ document.getElementById("theline").scrollIntoViewIfNeeded(true);
 `
 
 func ShowDesiredLineInFile(lineno string, in io.Reader, out io.Writer) error {
-	// log.Println("ShowDesiredLineInFile ", lineno)
 	ln := -1
 	if lineno != "" {
 		ln, _ = strconv.Atoi(lineno)
@@ -29,7 +28,6 @@ func ShowDesiredLineInFile(lineno string, in io.Reader, out io.Writer) error {
 	for scanner.Scan() {
 		s := scanner.Text()
 		matches := lineRecognizer.FindAllStringSubmatch(s, -1)
-		// log.Printf("%d %#v\n", i, matches)
 
 		switch {
 		case matches == nil:

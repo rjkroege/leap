@@ -14,6 +14,9 @@ import (
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 	"github.com/rjkroege/leap/server"
+
+	// Uncomment to turn on profiling.
+	// "github.com/pkg/profile"
 )
 
 // TODO(rjk): It is conceivable that I will want to support having a re-writing
@@ -103,6 +106,9 @@ func updateConfigIfNecessary(args []string) {
 }
 
 func main() {
+	// Uncomment to turn on profiling.
+	// defer profile.Start().Stop()
+
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "	%s <flags listed below> <search string>\n", os.Args[0])
@@ -163,7 +169,6 @@ func main() {
 		log.Println("couldn't read configuration: ", err)
 		return
 	}
-	log.Println("config: ", *config)
 
 	fn, stype, suffix := input.Parse(flag.Arg(0))
 

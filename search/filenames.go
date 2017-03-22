@@ -1,28 +1,44 @@
 package search
 
 import (
+	"bytes"
 	"path/filepath"
-	"strings"
 
 	"github.com/rjkroege/leap/output"
 )
 
+// bytesliceify converts the given array of strings
+// into an array of byte slices.
+func bytesliceify(paths []string) [][]byte {
+	t  := make([][]byte, 0, len(paths))
+	for _, s := range paths {
+		if s[len(s)-1] != '/' {
+			s = s + "/"
+		}
+		t = append(t, []byte(s))
+	}
+	return t
+}
+
+
 // Chops off the prefix. Fails if any one path is a prefix of another
 // path. But that's silly. The prefix can come either from the
 // configuration or from the base directories of the index.
-func (ix *trigramSearch) trimmer(fs string) string {
-	paths := ix.Paths()
-	if ix.prefixes != nil {
-		paths = ix.prefixes
+func (ix *trigramSearch) trimmer(fs []byte) []byte {
+	if ix.trimpaths == nil {
+		// Cache the trimpaths to improve performance (per
+		// profiling data.)
+		if ix.prefixes != nil {
+			ix.trimpaths = bytesliceify(ix.prefixes)
+		} else {
+			ix.trimpaths = bytesliceify(ix.Paths())
+		}
 	}
+	paths := ix.trimpaths
 
 	for _, p := range paths {
 		// Probably wrong on windows.
-		if p[len(p)-1] == '/' {
-			fs = strings.TrimPrefix(fs, p)
-		} else {
-			fs = strings.TrimPrefix(fs, p+"/")
-		}
+		fs = bytes.TrimPrefix(fs, p)
 	}
 	return fs
 }
@@ -40,18 +56,20 @@ func (ix *trigramSearch) filenameResult(fnames []uint32, suffix string) ([]outpu
 	oo := make([]output.Entry, 0, MaximumMatches)
 
 	for _, fn := range fnames {
-		name := ix.Name(fn)
-		title := filepath.Base(name)
+		name := ix.NameBytes(fn)
+		sname := string(name)
+		title := filepath.Base(sname)
 
 		oo = append(oo, output.Entry{
-			Uid:      name,
-			Arg:      extend(name, suffix),
+			Uid:      sname,
+			Arg:      extend(sname, suffix),
 			Title:    extend(title, suffix),
-			SubTitle: extend(ix.trimmer(name), suffix),
+			// Makes a temporary string.
+			SubTitle: extend(string(ix.trimmer(name)), suffix),
 
 			Type: "file",
 			Icon: output.AlfredIcon{
-				Filename: determineIconString(name),
+				Filename: determineIconString(sname),
 			},
 		})
 	}

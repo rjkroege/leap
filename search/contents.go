@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/google/codesearch/index"
 	"github.com/google/codesearch/regexp"
@@ -20,6 +21,7 @@ const MaximumMatches = 50
 type trigramSearch struct {
 	index.Index
 	prefixes []string
+	trimpaths [][]byte
 }
 
 func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre *regexp.Regexp, fnames []uint32, dedup map[uint32]struct{}) []uint32 {
@@ -33,13 +35,12 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre *reg
 		}
 
 		// TODO(rjk): I am redoing (very cheap) work later.
-		name := ix.Name(fileid)
+		name := ix.NameBytes(fileid)
 		sname := ix.trimmer(name)
 
-		if fre.MatchString(sname, true, true) < 0 {
+		if fre.Match(sname, true, true) < 0 {
 			continue
 		}
-		log.Println(sname)
 		fnames = append(fnames, fileid)
 		dedup[fileid] = struct{}{}
 	}
@@ -50,13 +51,16 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre *reg
 // inside of files using index at path and project truncation
 // prefixes.
 func NewTrigramSearch(path string, prefixes []string) output.Generator {
-	return &trigramSearch{*index.Open(path), prefixes}
+	return &trigramSearch{*index.Open(path), prefixes, nil}
 }
 
 func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]output.Entry, error) {
 	suffix := suffixl[0]
 
-	log.Printf("Query: %#v", qtype)
+	stime := time.Now()
+	defer func(){
+		log.Printf("query %#v tool %v", qtype, time.Since(stime))
+	}()
 
 	// TODO(rjk): code seems vaguely unclean
 	// Produce a list of filename, all or content-matches only.
@@ -88,7 +92,6 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	dedup := make(map[uint32]struct{}, MaximumMatches)
 	for _, fn := range fnl {
 		//	compile the filename regexp
-		log.Println("regexp:", fn)
 		fre, err := regexp.Compile(fn)
 		if err != nil {
 			return nil, err
@@ -137,7 +140,7 @@ func findLongestPrefix(names []string) int {
 // informative visual display by removing unnecessary
 // path components. fn is an absolute path, text before
 // cut should be discarded.
-func (ix *trigramSearch) nicelyTrimPath(fn string, cut int) string {
+func (ix *trigramSearch) nicelyTrimPath(fn []byte, cut int) string {
 	// Adjust for leading / after cutting.
 	if cut > 0 && fn[cut] == filepath.Separator && cut < len(fn) {
 		cut++
@@ -145,9 +148,9 @@ func (ix *trigramSearch) nicelyTrimPath(fn string, cut int) string {
 	cutstring := fn[cut:]
 	trimstring := ix.trimmer(fn)
 	if len(cutstring) < len(trimstring) {
-		return ".../" + cutstring
+		return ".../" + string(cutstring)
 	}
-	return ".../" + trimstring
+	return ".../" + string(trimstring)
 }
 
 func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp) ([]output.Entry, error) {
@@ -173,7 +176,7 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 			Uid:      fmt.Sprintf("%s:%d", name, m.lineno),
 			Arg:      arg,
 			Title:    title,
-			SubTitle: fmt.Sprintf("%s:%d %s", ix.nicelyTrimPath(name, trimpoint), m.lineno, m.matchLine),
+			SubTitle: fmt.Sprintf("%s:%d %s", ix.nicelyTrimPath([]byte(name), trimpoint), m.lineno, m.matchLine),
 			Type:     "file",
 			Icon: output.AlfredIcon{
 				Filename: determineIconString(name),

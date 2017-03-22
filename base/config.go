@@ -3,7 +3,6 @@ package base
 import (
 	"encoding/json"
 	"path/filepath"
-	"log"
 	"os"
 	"runtime"
 
@@ -36,7 +35,6 @@ func Filepath(test bool) string {
 }
 
 func GetConfiguration(fp string) (*Configuration, error) {
-	log.Println("GetConfiguration")
 	fd, err := os.Open(fp)
 
 	if os.IsNotExist(err) {
@@ -63,7 +61,6 @@ func GetConfiguration(fp string) (*Configuration, error) {
 
 // TODO(rjk): I'm not going to worry about simultaneous mutation.
 func SaveConfiguration(config *Configuration, fp string) error {
-	log.Println("SaveConfiguration")
 	fd, err := os.Create(fp)
 	if err != nil {
 		return err

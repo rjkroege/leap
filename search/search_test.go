@@ -169,7 +169,7 @@ func TestOneMatchFileNameLineNumberQueryWithPrefix(t *testing.T) {
 		t.Errorf("unexpected error on query: %v\n", err)
 	}
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got %#v exepcted %#v", got, expected)
+		t.Errorf("got %+v\nexepcted %+v\n%#v\n", got, expected, got)
 	}
 }
 
