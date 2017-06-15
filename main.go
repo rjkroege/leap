@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/client"
@@ -175,10 +176,13 @@ func main() {
 	var entries []output.Entry
 
 	if config.Connect {
+		stime := time.Now()		
 		entries, err = client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
 		if err != nil {
 			log.Fatalln("problem connecting to server: ", err)
+			return
 		}
+		log.Printf("query remote %v, %v, %v tool %v", fn, stype, suffix, time.Since(stime))		
 	} else {
 		gen := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
 		// TODO(rjk): error check

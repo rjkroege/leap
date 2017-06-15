@@ -59,7 +59,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 
 	stime := time.Now()
 	defer func(){
-		log.Printf("query %#v tool %v", qtype, time.Since(stime))
+		log.Printf("query %v, %v, %v tool %v", fnl, qtype, suffixl, time.Since(stime))
 	}()
 
 	// TODO(rjk): code seems vaguely unclean
