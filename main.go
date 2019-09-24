@@ -10,7 +10,6 @@ import (
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/client"
-	"github.com/rjkroege/leap/highlights"
 	"github.com/rjkroege/leap/input"
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
@@ -43,8 +42,6 @@ var (
 		"Set the path trimming prefixes to the given paths.")
 	decodePlumb = flag.Bool("dp", false,
 		"Decode the single provided path and convert it back into a valid plumb address")
-	highlightFile = flag.Bool("hf", false,
-		"Reprocess the output of highlight marking the line extracted from the provided encoded path")
 )
 
 func LogToTemp() func() {
@@ -130,16 +127,6 @@ func main() {
 		}
 		log.Println("output", input.EncodedToPlumb(flag.Arg(0)))
 		fmt.Println(input.EncodedToPlumb(flag.Arg(0)))
-		os.Exit(0)
-	case *highlightFile:
-		log.Println("running highlightFile", flag.Arg(0))
-		if flag.NArg() != 1 {
-			flag.Usage()
-			os.Exit(0)
-		}
-		if err := highlights.ShowDesiredLineInFile(input.EncodedToNumber(flag.Arg(0)), os.Stdin, os.Stdout); err != nil {
-			log.Println("ShowDesiredLine... failed ", err)
-		}
 		os.Exit(0)
 	case *runServer:
 		fmt.Fprintln(os.Stderr, "go run as server")
