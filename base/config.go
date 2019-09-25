@@ -21,17 +21,17 @@ type Configuration struct {
 	Prefixes []string
 }
 
+// Filepath returns the path to the leaprc configuration file.
 func Filepath(test bool) string {
 	if test {
-		return "./leaprc"
+		return "leaprc"
 	}
 
-	var home string
-	home = os.Getenv("HOME")
+	home := os.Getenv("HOME")
 	if runtime.GOOS == "windows" && home == "" {
 		home = os.Getenv("USERPROFILE")
 	}
-	return filepath.Clean(home + "/.leaprc")
+	return filepath.Clean(filepath.Join(home ,".leaprc"))
 }
 
 func GetConfiguration(fp string) (*Configuration, error) {
