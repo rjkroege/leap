@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"path/filepath"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/google/codesearch/index"
@@ -16,44 +16,43 @@ const Prefix = "/tmp/.leaping/glenda"
 const SubPrefix = "/tmp/.leaping"
 
 type Configuration struct {
-	Hostname string
+	Hostname  string
 	Indexpath string
-	Connect bool
-	Prefixes []string
+	Connect   bool
+	Prefixes  []string
 	newconfig *GlobalConfiguration
 }
 
 // The the new types.
 type Project struct {
-	Host string  		`json:"host"`
-	Indexpath string	`json:"indexpath"`
-	Remote bool		`json:"remote"`
-	Prefixes []string	`json:"prefixes"`
+	Host      string   `json:"host"`
+	Indexpath string   `json:"indexpath"`
+	Remote    bool     `json:"remote"`
+	Prefixes  []string `json:"prefixes"`
 }
 
 type GlobalConfiguration struct {
-	Version int			`json:"version"`
-	Currentproject string			`json:"currentproject"`
-	Projects map[string]*Project  	`json:"projects"`
+	Version        int                 `json:"version"`
+	Currentproject string              `json:"currentproject"`
+	Projects       map[string]*Project `json:"projects"`
 }
 
 // getLegacyConfiguration returns the legacy Configuration object corresponding
 // to the current project in the new style configuration.
 func (gc *GlobalConfiguration) getLegacyConfiguration() (*Configuration, error) {
-	if _, ok := gc.Projects[gc.Currentproject] ; !ok {
+	if _, ok := gc.Projects[gc.Currentproject]; !ok {
 		return nil, fmt.Errorf("no project corresponding to selected project %s", gc.Currentproject)
 	}
-	
+
 	np := gc.Projects[gc.Currentproject]
 	return &Configuration{
-		Hostname:	np.Host,
-		Indexpath:	np.Indexpath,
-		Connect:		np.Remote,
-		Prefixes:		np.Prefixes,
-		newconfig:	gc,
+		Hostname:  np.Host,
+		Indexpath: np.Indexpath,
+		Connect:   np.Remote,
+		Prefixes:  np.Prefixes,
+		newconfig: gc,
 	}, nil
 }
-
 
 // Filepath returns the path to the leaprc configuration file.
 func Filepath(test bool) string {
@@ -65,7 +64,7 @@ func Filepath(test bool) string {
 	if runtime.GOOS == "windows" && home == "" {
 		home = os.Getenv("USERPROFILE")
 	}
-	return filepath.Clean(filepath.Join(home ,".leaprc"))
+	return filepath.Clean(filepath.Join(home, ".leaprc"))
 }
 
 func GetConfiguration(fp string) (*Configuration, error) {
@@ -73,9 +72,9 @@ func GetConfiguration(fp string) (*Configuration, error) {
 
 	if os.IsNotExist(err) {
 		return &Configuration{
-			Hostname: "",
+			Hostname:  "",
 			Indexpath: index.File(),
-			Connect: false,
+			Connect:   false,
 		}, nil
 	} else if err != nil {
 		return nil, err
@@ -87,7 +86,7 @@ func GetConfiguration(fp string) (*Configuration, error) {
 	}
 
 	// New way didn't work so try decoding the old way.
-	if _, err := fd.Seek(0,0); err != nil {
+	if _, err := fd.Seek(0, 0); err != nil {
 		return nil, fmt.Errorf("can't seek on config file %s because %v", fp, err)
 	}
 
@@ -118,14 +117,14 @@ func getNewConfig(reader io.Reader) (*GlobalConfiguration, error) {
 // updateConfig makes a new-style configuration out of the old one.
 func updateConfig(oldconfig *Configuration) *GlobalConfiguration {
 	return &GlobalConfiguration{
-		Version: 1,
+		Version:        1,
 		Currentproject: "default",
-		Projects: map[string]*Project {
-			"default": &Project{
-				Host: oldconfig.Hostname,
+		Projects: map[string]*Project{
+			"default": {
+				Host:      oldconfig.Hostname,
 				Indexpath: oldconfig.Indexpath,
-				Remote: oldconfig.Connect,
-				Prefixes: oldconfig.Prefixes,
+				Remote:    oldconfig.Connect,
+				Prefixes:  oldconfig.Prefixes,
 			},
 		},
 	}
@@ -151,7 +150,7 @@ func saveNewConfig(config *GlobalConfiguration, fp string) error {
 // on changes made to the legacy Configuration payloads.
 func (config *Configuration) pushConfigIntoNew() {
 	nc := config.newconfig
-	
+
 	proj := nc.Projects[nc.Currentproject]
 
 	proj.Host = config.Hostname
