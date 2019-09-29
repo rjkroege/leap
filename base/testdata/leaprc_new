@@ -1,0 +1,14 @@
+{
+	"version": 1,
+	"currentproject": "base",
+	"projects": {
+		"base": {
+			"host": "myhost",
+			"indexpath": "/home/gopher",
+			"remote": false,
+			"prefixes": [
+				"/home/gopher/src"
+			]
+		}
+	}
+}
