@@ -10,7 +10,7 @@ import (
 // bytesliceify converts the given array of strings
 // into an array of byte slices.
 func bytesliceify(paths []string) [][]byte {
-	t  := make([][]byte, 0, len(paths))
+	t := make([][]byte, 0, len(paths))
 	for _, s := range paths {
 		if s[len(s)-1] != '/' {
 			s = s + "/"
@@ -19,7 +19,6 @@ func bytesliceify(paths []string) [][]byte {
 	}
 	return t
 }
-
 
 // Chops off the prefix. Fails if any one path is a prefix of another
 // path. But that's silly. The prefix can come either from the
@@ -33,6 +32,8 @@ func (ix *trigramSearch) trimmer(fs []byte) []byte {
 		} else {
 			ix.trimpaths = bytesliceify(ix.Paths())
 		}
+		// TODO(rjk): most fs share the same path
+		// prefix. We are doing way too much work.
 	}
 	paths := ix.trimpaths
 
@@ -61,9 +62,9 @@ func (ix *trigramSearch) filenameResult(fnames []uint32, suffix string) ([]outpu
 		title := filepath.Base(sname)
 
 		oo = append(oo, output.Entry{
-			Uid:      sname,
-			Arg:      extend(sname, suffix),
-			Title:    extend(title, suffix),
+			Uid:   sname,
+			Arg:   extend(sname, suffix),
+			Title: extend(title, suffix),
 			// Makes a temporary string.
 			SubTitle: extend(string(ix.trimmer(name)), suffix),
 

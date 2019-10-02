@@ -58,7 +58,7 @@ func TestOneMatchFileNameOnlyQuery(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	// One file has c in the name.
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt"),
 		Arg:          tDir("test_data/b/ccc.txt"),
@@ -83,7 +83,7 @@ func TestOneMatchFileNameLineNumberQuery(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	// One file has c in the name.
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt"),
 		Arg:          tDir("test_data/b/ccc.txt:2"),
@@ -107,7 +107,7 @@ func TestOneMatchContentQuery(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	// One file contains carrot.
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/aaa.txt:2"),
 		Arg:          pDir(2, "test_data/b/aaa.txt"),
@@ -153,7 +153,7 @@ func TestOneMatchFileNameLineNumberQueryWithPrefix(t *testing.T) {
 	})
 
 	// One file has c in the name.
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt"),
 		Arg:          tDir("test_data/b/ccc.txt:2"),
@@ -179,7 +179,7 @@ func TestOneMatchFileNameLineNumberQueryWithSlashedPrefix(t *testing.T) {
 	})
 
 	// One file has c in the name.
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt"),
 		Arg:          tDir("test_data/b/ccc.txt:2"),
@@ -205,7 +205,7 @@ func TestMissingFile(t *testing.T) {
 	os.Rename("test_data/b/aaa.txt", "test_data/b/aaa.txt.missing")
 	defer os.Rename("test_data/b/aaa.txt.missing", "test_data/b/aaa.txt")
 
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/ccc.txt:4"),
 		Arg:          pDir(4, "test_data/b/ccc.txt"),
@@ -243,7 +243,7 @@ func TestLargeFile(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	// One file contains carrot.
-	expected := []output.Entry{output.Entry{XMLName: xml.Name{Space: "",
+	expected := []output.Entry{{XMLName: xml.Name{Space: "",
 		Local: ""},
 		Uid:          tDir("test_data/b/bbb.txt:7617"),
 		Arg:          pDir(7617, "test_data/b/bbb.txt"),
@@ -268,7 +268,7 @@ func TestManyMatchesFile(t *testing.T) {
 	gen := NewTrigramSearch(testIndex(t), nil)
 
 	expected := make([]output.Entry, MaximumMatches)
-	for i, _ := range expected {
+	for i := range expected {
 		num := fmt.Sprintf("%d", i+1)
 		expected[i] = output.Entry{XMLName: xml.Name{Space: "",
 			Local: ""},

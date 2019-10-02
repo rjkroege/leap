@@ -20,29 +20,31 @@ const MaximumMatches = 50
 
 type trigramSearch struct {
 	index.Index
-	prefixes []string
+	prefixes  []string
 	trimpaths [][]byte
 }
 
-func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, fre *regexp.Regexp, fnames []uint32, dedup map[uint32]struct{}) []uint32 {
-
-	// re-process file names.
+// filterFileIndicesForRegexpMatch looks up each file index in the
+// backing cindex store and adds it to the result list if its name
+// matches the filename regexp pattern.
+// TODO(rjk): Do we need dedup?
+func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *regexp.Regexp, fnames []uint32, dedup map[uint32]struct{}) []uint32 {
+	// This loop could conceivably be over all of the filenames. This could
+	// be large. Keeping the body efficient has large impact.
 	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
 		fileid := post[i]
-
 		if _, ok := dedup[fileid]; ok {
 			continue
 		}
 
-		// TODO(rjk): I am redoing (very cheap) work later.
 		name := ix.NameBytes(fileid)
 		sname := ix.trimmer(name)
 
-		if fre.Match(sname, true, true) < 0 {
+		if re.Match(sname, true, true) >= 0 {
+			fnames = append(fnames, fileid)
+			dedup[fileid] = struct{}{}
 			continue
 		}
-		fnames = append(fnames, fileid)
-		dedup[fileid] = struct{}{}
 	}
 	return fnames
 }
@@ -58,21 +60,28 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	suffix := suffixl[0]
 
 	stime := time.Now()
-	defer func(){
-		log.Printf("query %v, %v, %v tool %v", fnl, qtype, suffixl, time.Since(stime))
-	}()
 
 	// TODO(rjk): code seems vaguely unclean
 	// Produce a list of filename, all or content-matches only.
 	var query *index.Query
 	var re *regexp.Regexp
 
-	// idea: I want some easy way to bound the number of responses
-	// I can look at the search complexity and switch to regep mode if
+	// TODO(rjk): Explore having different (extended) search properties.
+	// In essence, I want to do the search as if the argument is a filename
+	// or something in a file.
+	// TODO(rjk): I want some easy way to bound the number of responses
+	// I can look at the search complexity and switch to regexp mode if
 	// it's insufficiently complicated.
 	if qtype == ":" {
+		// This is a filename-only search.
 		query = &index.Query{Op: index.QAll}
+
+		// The perf problem here is we don't have an index of the
+		// filenames. But on a modern laptop, it's 12ms for Chrome.
+		// That's fast enough for doing it for each typed character.
+		// Chrome is an atypically large use case.
 	} else {
+		// This is a contents search. Warmish-runs take 17ms on Chrome.
 		pat := "(?m)" + suffix
 		var err error
 		re, err = regexp.Compile(pat)
@@ -80,28 +89,37 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 			return nil, err
 		}
 		query = index.RegexpQuery(re.Syntax)
-		// TODO(rjk): The result of this is that we first build a list of
-		// filenames. Bound in some way.
-
-		// TODO(rjk): if the number of files specified by the file regexp
-		// lies below some threshold, then skip the full index search.
 	}
 	post := ix.PostingQuery(query)
 
+	// File tokens are 32 bit integers.
 	fnames := make([]uint32, 0, MaximumMatches)
 	dedup := make(map[uint32]struct{}, MaximumMatches)
-	for _, fn := range fnl {
-		//	compile the filename regexp
-		fre, err := regexp.Compile(fn)
-		if err != nil {
-			return nil, err
-		}
-		fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames, dedup)
+
+	melded := strings.Join(fnl, "|")
+	fre, err := regexp.Compile(melded)
+	if err != nil {
+		return nil, err
 	}
 
+	// This is expensive for the filename only matching case because it must
+	// iterate over all files.
+	fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames, dedup)
+
+	defer func() {
+		log.Printf("Query %v, %v, %v tool outputstate total %v", fnl, qtype, suffixl, time.Since(stime))
+	}()
+
 	if qtype == ":" {
+		// Filename results do not actually require the files.
+		// If we have the index locally, we would appear to not
+		// need to ask the remote for anything.
 		return ix.filenameResult(fnames, suffix)
 	} else {
+		// Conversely, file search requires access to the files.
+		// So if the files aren't actually local, we need to send
+		// messages here. This is expensive for content searches
+		// because it looks in each one.
 		return ix.contentSearchResult(fnames, re)
 	}
 }
@@ -153,6 +171,8 @@ func (ix *trigramSearch) nicelyTrimPath(fn []byte, cut int) string {
 	return ".../" + string(trimstring)
 }
 
+// contentSearchResult actually searches inside the files to confirm the
+// index matches.
 func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp) ([]output.Entry, error) {
 	// Search inside the files.
 	matches := multiFile(fnames, re, ix)
@@ -183,7 +203,12 @@ func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp)
 			},
 		})
 
-		// Copy the content to the prefix.
+		// TODO(rjk): make icons for C++ etc. work correctly here.
+		// The golang icons work? They do. They're part of the workflow.
+		// I can make custom icons, put in the workflow and save the copies.
+		// This will simplify the "remote-i-fying"
+		// Copy the content to the prefix so that icons work properly.
+		// TODO(rjk): this doesn't work right for remote?
 		dir := filepath.Dir(arg)
 		if err := os.MkdirAll(dir, 0700); err != nil {
 			log.Println(dir, err)
