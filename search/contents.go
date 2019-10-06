@@ -44,6 +44,40 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *rege
 	return fnames
 }
 
+// reorderMatchByFuzziness reorders the matches to be in increasing order
+// of fuzziness so that best matches appear first.
+func (ix *trigramSearch) reorderMatchByFuzziness(matches []uint32, fnls []string) ([]uint32, error) {
+	res := make([]*regexp.Regexp, len(fnls))
+	reordered := make([][]uint32, len(res))
+	for i , _ := range res {
+		reordered[i] = make([]uint32, 0, len(matches))
+		fre, err := regexp.Compile(fnls[i])
+		if err != nil {
+			return nil, err
+		}
+		res[i] = fre
+	}
+
+	outer: for _, fileid := range matches {
+		for i, re := range res[0:len(res)-1] {
+			name := ix.NameBytes(fileid)
+			sname := ix.trimmer(name)
+			if re.Match(sname, true, true) >= 0 {
+				reordered[i] = append(reordered[i], fileid)
+				continue outer
+			}
+		}
+		reordered[len(res)-1] = append(reordered[len(res)-1], fileid)
+	}
+
+	result := reordered[0]
+	for _, r := range reordered[1:] {
+		result = append(result, r...)
+	}
+	return result, nil
+}
+
+
 // NewTrigramSearch returns a Generator that can search
 // inside of files using index at path and project truncation
 // prefixes.
@@ -100,6 +134,11 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	// This is O(n) over the list of candidate files. That would be all of the
 	// files for a file-name only match.
 	fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames)
+
+	// Reorder the results for better quality.
+	if fnames, err = ix.reorderMatchByFuzziness(fnames, fnl); err != nil {
+		return nil, err
+	}
 
 	defer func() {
 		log.Printf("Query %v, %v, %v tool outputstate total %v", fnl, qtype, suffixl, time.Since(stime))

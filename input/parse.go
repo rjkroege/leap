@@ -48,7 +48,7 @@ func fuzzyMatchers(s string) []string {
 	m = append(m, "^"+strings.Join(subpaths, "[^/]*/"))
 
 	// Complete sub-paths, not rooted.
-	m = append(m, strings.Join(subpaths, "[^/]*/"))
+	m = append(m, strings.Join(subpaths, "[^/]*/[^/]*"))
 
 	m = append(m, fileExp(s))
 	return m
