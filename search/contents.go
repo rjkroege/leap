@@ -27,22 +27,17 @@ type trigramSearch struct {
 // filterFileIndicesForRegexpMatch looks up each file index in the
 // backing cindex store and adds it to the result list if its name
 // matches the filename regexp pattern.
-// TODO(rjk): Do we need dedup?
-func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *regexp.Regexp, fnames []uint32, dedup map[uint32]struct{}) []uint32 {
+func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *regexp.Regexp, fnames []uint32) []uint32 {
 	// This loop could conceivably be over all of the filenames. This could
 	// be large. Keeping the body efficient has large impact.
 	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
 		fileid := post[i]
-		if _, ok := dedup[fileid]; ok {
-			continue
-		}
 
 		name := ix.NameBytes(fileid)
 		sname := ix.trimmer(name)
 
 		if re.Match(sname, true, true) >= 0 {
 			fnames = append(fnames, fileid)
-			dedup[fileid] = struct{}{}
 			continue
 		}
 	}
@@ -94,17 +89,17 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 
 	// File tokens are 32 bit integers.
 	fnames := make([]uint32, 0, MaximumMatches)
-	dedup := make(map[uint32]struct{}, MaximumMatches)
 
+	// We merge the regexps together for fastest initial filter.
 	melded := strings.Join(fnl, "|")
 	fre, err := regexp.Compile(melded)
 	if err != nil {
 		return nil, err
 	}
 
-	// This is expensive for the filename only matching case because it must
-	// iterate over all files.
-	fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames, dedup)
+	// This is O(n) over the list of candidate files. That would be all of the
+	// files for a file-name only match.
+	fnames = ix.filterFileIndicesForRegexpMatch(post, fre, fnames)
 
 	defer func() {
 		log.Printf("Query %v, %v, %v tool outputstate total %v", fnl, qtype, suffixl, time.Since(stime))
