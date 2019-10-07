@@ -49,7 +49,7 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *rege
 func (ix *trigramSearch) reorderMatchByFuzziness(matches []uint32, fnls []string) ([]uint32, error) {
 	res := make([]*regexp.Regexp, len(fnls))
 	reordered := make([][]uint32, len(res))
-	for i , _ := range res {
+	for i := range res {
 		reordered[i] = make([]uint32, 0, len(matches))
 		fre, err := regexp.Compile(fnls[i])
 		if err != nil {
@@ -58,8 +58,9 @@ func (ix *trigramSearch) reorderMatchByFuzziness(matches []uint32, fnls []string
 		res[i] = fre
 	}
 
-	outer: for _, fileid := range matches {
-		for i, re := range res[0:len(res)-1] {
+outer:
+	for _, fileid := range matches {
+		for i, re := range res[0 : len(res)-1] {
 			name := ix.NameBytes(fileid)
 			sname := ix.trimmer(name)
 			if re.Match(sname, true, true) >= 0 {
@@ -76,7 +77,6 @@ func (ix *trigramSearch) reorderMatchByFuzziness(matches []uint32, fnls []string
 	}
 	return result, nil
 }
-
 
 // NewTrigramSearch returns a Generator that can search
 // inside of files using index at path and project truncation

@@ -102,13 +102,41 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 
 func multiFile(fnames []uint32, re *regexp.Regexp, ix *trigramSearch) []*inFileMatches {
 	matches := make([]*inFileMatches, 0, MaximumMatches)
-	for i := 0; len(matches) < cap(matches) && i < len(fnames); i++ {
-		m, err := searchInFile(re, ix.Name(fnames[i]))
-		if err != nil {
-			log.Println("multiFile error: ", err)
-		} else {
-			matches = append(matches, m...)
-		}
+	orderingchans := make([]chan int, len(fnames))
+	resultchan := make(chan []*inFileMatches)
+
+	for i := range orderingchans {
+		ochan := make(chan int)
+		orderingchans[i] = ochan
+
+		go func(c chan int, name, pat string) {
+			// regexp.Regexp is not threadsafe so make one.
+			// We know it will compile because we already compiled it.
+			re, _ = regexp.Compile(pat)
+
+			// Do concurrent work. Some might be wasted.
+			m, err := searchInFile(re, name)
+			if err != nil {
+				log.Println("multiFile error: ", err)
+				// Be sure to ship back an empty array.
+				m = []*inFileMatches{}
+			}
+
+			// Block here until either invoker says yes or no.
+			if _, ok := <-c; ok {
+				resultchan <- m
+			}
+		}(ochan, ix.Name(fnames[i]), re.String())
 	}
+
+	for i := 0; len(matches) < MaximumMatches && i < len(orderingchans); i++ {
+		orderingchans[i] <- 1
+		matches = append(matches, (<-resultchan)...)
+	}
+
+	for _, c := range orderingchans {
+		close(c)
+	}
+
 	return matches
 }
