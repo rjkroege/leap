@@ -9,11 +9,11 @@ import (
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/client"
+	"github.com/rjkroege/leap/index"
 	"github.com/rjkroege/leap/input"
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 	"github.com/rjkroege/leap/server"
-
 	// Uncomment to turn on profiling.
 	// "github.com/pkg/profile"
 )
@@ -27,7 +27,7 @@ var (
 	runServer = flag.Bool("server", false, "Run as a server. If a server is already running, does nothing.")
 	stop      = flag.Bool("stop", false, "Connect to the configured server and stop it.")
 
-	index     = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
+	indexcmd    = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
 	decodePlumb = flag.Bool("dp", false,
 		"Decode the single provided path and convert it back into a valid plumb address")
 )
@@ -75,6 +75,19 @@ func main() {
 			log.Println("shutdown generated output: ", err)
 		}
 		os.Exit(0)
+	case *indexcmd:
+		config, err := base.GetConfiguration(base.Filepath(*testlog))
+		if err != nil {
+			log.Fatal("couldn't read configuration: ", err)
+			return
+		}
+		newconfig := config.GetNewConfiguration()
+		if newconfig == nil {
+			log.Fatal("index command requires upgraded config")
+			return
+		}
+		index.ReIndex(newconfig)
+		os.Exit(0)
 	}
 
 	// May exit.
@@ -92,13 +105,13 @@ func main() {
 	var entries []output.Entry
 
 	if config.Connect {
-		stime := time.Now()		
+		stime := time.Now()
 		entries, err = client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
 		if err != nil {
 			log.Fatalln("problem connecting to server: ", err)
 			return
 		}
-		log.Printf("query remote %v, %v, %v tool %v", fn, stype, suffix, time.Since(stime))		
+		log.Printf("query remote %v, %v, %v tool %v", fn, stype, suffix, time.Since(stime))
 	} else {
 		gen := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
 		// TODO(rjk): error check
