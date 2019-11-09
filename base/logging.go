@@ -9,7 +9,7 @@ import (
 func LogToTemp() func() {
 	logFile, err := ioutil.TempFile("/tmp", "leap")
 	if err != nil {
-		log.Panic("leap couldn't make a logging file: %v", err)
+		log.Panicf("leap couldn't make a logging file: %v", err)
 	}
 	log.SetOutput(logFile)
 

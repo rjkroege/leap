@@ -2,6 +2,7 @@ package base
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +11,11 @@ import (
 
 	"github.com/google/codesearch/index"
 )
+
+var (
+	useproject = flag.String("useproject", "", "Specify the project to use.")
+)
+
 
 // See package comment for why we have this amusing string.
 const Prefix = "/tmp/.leaping/glenda"
@@ -29,6 +35,8 @@ type Project struct {
 	Indexpath string   `json:"indexpath"`
 	Remote    bool     `json:"remote"`
 	Prefixes  []string `json:"prefixes"`
+	Remoteproject string  `json:"remoteproject"`
+	Remotepath string   `json:"remotepath"`
 }
 
 type GlobalConfiguration struct {
@@ -111,6 +119,9 @@ func getNewConfig(reader io.Reader) (*GlobalConfiguration, error) {
 	if newstyleconfig.Version != 1 {
 		return nil, fmt.Errorf("unsupported newconfig version, can't decode")
 	}
+	if *useproject != "" {
+		newstyleconfig.Currentproject = *useproject
+	}
 	return newstyleconfig, nil
 }
 
@@ -129,6 +140,8 @@ func updateConfig(oldconfig *Configuration) *GlobalConfiguration {
 				Indexpath: oldconfig.Indexpath,
 				Remote:    oldconfig.Connect,
 				Prefixes:  oldconfig.Prefixes,
+				Remoteproject: "#FIX#",
+				Remotepath: "#FIX#",
 			},
 		},
 	}
@@ -183,7 +196,7 @@ func SaveConfiguration(config *Configuration, fp string) error {
 		return saveNewConfig(config.newconfig, fp)
 	}
 
-	// We a old configuration. So update that.
+	// We have a old configuration. So update that.
 	coder := json.NewEncoder(fd)
 	if err := coder.Encode(config); err != nil {
 		return err

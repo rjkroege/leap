@@ -54,6 +54,8 @@ func (ncc *GlobalConfiguration) updateNewStyleConfiguration(path string, args []
 				Indexpath: "",
 				Remote:    false,
 				Prefixes:  []string{},
+				Remoteproject: "",
+				Remotepath: "",
 			}
 		}
 		ncc.Currentproject = *setproject
@@ -83,7 +85,7 @@ func (ncc *GlobalConfiguration) updateNewStyleConfiguration(path string, args []
 	}
 
 	if err := saveNewConfig(ncc, path); err != nil {
-		log.Fatalf("Failed to write configuration: ", err)
+		log.Fatalf("Failed to write configuration: %v", err)
 	}
 	os.Exit(0)
 }
@@ -117,7 +119,7 @@ func UpdateConfigIfNecessary(args []string, testingconfig bool) {
 	if *update {
 		newconfig := updateConfig(config)
 		if err := saveNewConfig(newconfig, fp); err != nil {
-			log.Println("can't update config %s because %v", fp, err)
+			log.Printf("can't update config %s because %v", fp, err)
 		}
 		os.Exit(1)
 	}
@@ -152,7 +154,7 @@ func UpdateConfigIfNecessary(args []string, testingconfig bool) {
 	}
 
 	if err := SaveConfiguration(config, fp); err != nil {
-		log.Fatalf("Failed to write configuration: ", err)
+		log.Fatalf("Failed to write configuration: %v", err)
 	}
 	os.Exit(0)
 }

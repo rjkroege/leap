@@ -1,6 +1,10 @@
+github.com/Redundancy/go-sync v0.0.0-20160424152509-8931874cad5c h1:/khnqZBYJRz+PbvpKZRhFEzjwZgCIAgwIeQBsA4m1MA=
+github.com/Redundancy/go-sync v0.0.0-20160424152509-8931874cad5c/go.mod h1:5Bmgf0ZQ/uM/czHDWPQvkArJK6sk12/7KffehZ67Vxw=
 github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0 h1:sDMmm+q/3+BukdIpxwO365v/Rbspp2Nt5XntgQRXq8Q=
 github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0/go.mod h1:4Zcjuz89kmFXt9morQgcfYZAYZ5n8WHjt81YYWIwtTM=
 github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27 h1:HHUr4P/aKh4quafGxDT9LDasjGdlGkzLbfmmrlng3kA=
 github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27/go.mod h1:VQx0hjo2oUeQkQUET7wRwradO6f+fN5jzXgB/zROxxE=
 github.com/google/codesearch v1.1.0 h1:16XNvHHm5JIymVjk2eyYspEv9Tlp/BTdBW7+e0AkZng=
 github.com/google/codesearch v1.1.0/go.mod h1:qCnXDFnak/trCmLaE50kgPte3AX9jSeruZexWEOivi0=
+github.com/petar/GoLLRB v0.0.0-20190514000832-33fb24c13b99 h1:KcEvVBAvyHkUdFAygKAzwB6LAcZ6LS32WHmRD2VyXMI=
+github.com/petar/GoLLRB v0.0.0-20190514000832-33fb24c13b99/go.mod h1:HUpKUBZnpzkdx0kD/+Yfuft+uD3zHGtXF/XJB14TUr4=

@@ -76,6 +76,7 @@ func main() {
 		}
 		os.Exit(0)
 	case *indexcmd:
+		// TODO(rjk): Pull this block out into a helper function.
 		config, err := base.GetConfiguration(base.Filepath(*testlog))
 		if err != nil {
 			log.Fatal("couldn't read configuration: ", err)
@@ -86,7 +87,19 @@ func main() {
 			log.Fatal("index command requires upgraded config")
 			return
 		}
-		index.ReIndex(newconfig)
+
+		if config.Connect {
+			if err := client.ReIndexAndTransfer(newconfig); err != nil {
+				log.Println("Remote index failed because: ", err)
+			}
+		} else {
+			output, err := index.ReIndex(newconfig, newconfig.Currentproject)
+			if err != nil {
+				fmt.Printf("couldn't reindex because: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Println(string(output))
+		}
 		os.Exit(0)
 	}
 
