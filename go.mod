@@ -8,4 +8,4 @@ require (
 	github.com/google/codesearch v1.1.0
 )
 
-replace github.com/Redundancy/go-sync => /Users/rjkroege/tools/gopkg/src/github.com/Redundancy/go-sync
+replace github.com/Redundancy/go-sync => github.com/rjkroege/go-sync v0.0.1

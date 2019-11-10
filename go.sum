@@ -8,3 +8,5 @@ github.com/google/codesearch v1.1.0 h1:16XNvHHm5JIymVjk2eyYspEv9Tlp/BTdBW7+e0AkZ
 github.com/google/codesearch v1.1.0/go.mod h1:qCnXDFnak/trCmLaE50kgPte3AX9jSeruZexWEOivi0=
 github.com/petar/GoLLRB v0.0.0-20190514000832-33fb24c13b99 h1:KcEvVBAvyHkUdFAygKAzwB6LAcZ6LS32WHmRD2VyXMI=
 github.com/petar/GoLLRB v0.0.0-20190514000832-33fb24c13b99/go.mod h1:HUpKUBZnpzkdx0kD/+Yfuft+uD3zHGtXF/XJB14TUr4=
+github.com/rjkroege/go-sync v0.0.1 h1:z5hgqku9aubX0MhxVZofiDSDwxj6ywPWjIcftFIpGOg=
+github.com/rjkroege/go-sync v0.0.1/go.mod h1:Xx8HVuLMQKQcR4BGIOKFkUYI1QXlxBQhZ6oB/erLIFU=
