@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"crypto/md5"
 	"os"
-	"path/filepath"
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/output"
@@ -113,7 +112,7 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	// Setup the description of the remote file.
 	fs := &gosync.BasicSummary{
 		ChecksumIndex:  reply.ReferenceFileIndex,
-		ChecksumLookup: reply.ChecksumLookup,
+		ChecksumLookup: reply.StrongChecksumGetter,
 		BlockCount:     uint(blockCount),
 		BlockSize:      uint(server.BLOCK_SIZE),
 		FileSize:       fileSize,
@@ -139,14 +138,14 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 		16*MB,
 	)
 
-	inputfile, err := os.Open(localpath)
+	inputfile, err := os.OpenFile(localpath, os.O_RDONLY|os.O_CREATE, 0644)
 	if err != nil {
 		// TODO(rjk): Use details from the config
 		return fmt.Errorf("can't open localpath because: %v", err)
 	}
 	defer inputfile.Close()
 
-	outputfilename := filepath.Join(localpath, "-temporary")
+	outputfilename := localpath + "-temporary"
 	outputfile, err := os.Create(outputfilename)
 	if err != nil {
 		// TODO(rjk): Also use details from the config.
@@ -194,7 +193,9 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	outputfile.Close()
 	inputfile.Close()
 
-	replace(localpath, outputfilename)
+	if err := replace(localpath, outputfilename); err != nil {
+		return fmt.Errorf("replacing %s with update %s failed: %v", localpath, outputfilename, err)
+	}
 	return nil
 }
 

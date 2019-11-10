@@ -15,6 +15,7 @@ import (
 	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 	"github.com/Redundancy/go-sync/filechecksum"
+	"github.com/Redundancy/go-sync/chunks"
 	grsync "github.com/Redundancy/go-sync/index"
 	"github.com/Redundancy/go-sync/indexbuilder"
 )
@@ -131,8 +132,38 @@ type RemoteCheckSumIndexData struct {
 	CindexOutput []byte
 	FileSize int64
 	ReferenceFileIndex *grsync.ChecksumIndex
-	ChecksumLookup  filechecksum.ChecksumLookup
+	StrongChecksumGetter  chunks.StrongChecksumGetter
 }
+
+/*
+type not registered...
+chunks.StrongChecksumGetter
+
+
+*ChecksumIndex: 
+	BlockCount, MaxStrongLength, AverageStrongLength, Count: easy and resolved
+	
+
+	weakChecksumLookup:  []map[uint32]StrongChecksumList:  NOT EXPORTED. 
+	// Can resolve by exporting.
+
+
+StrongChecksumList -> []chunks.ChunkChecksum
+
+ChunkChecksum:
+	all fields good.
+
+
+ChecksumLookup: interface. Anything that implements: GetStrongChecksumForBlock
+
+ChecksumLookup -> StrongChecksumGetter -> []ChunkChecksum.
+And a []ChunkChecksum is shippable. See aboves. 
+
+So: 1. must make weakChecksum... shipable. And then can wrap the []ChunkChecksum wiht a
+StrongChecksumGetter.
+
+*/
+
 
 func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs, resp *RemoteCheckSumIndexData) error {
 	if s.token != 0 && s.token != args.Token {
@@ -180,9 +211,14 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 		return fmt.Errorf("can't compute checksums on %s because %v", indexpath, err)
 	}
 
-	// shove the files types into the response
+	// Shove the files types into the response. 
 	resp.ReferenceFileIndex = referenceFileIndex
-	resp.ChecksumLookup = checksumLookup
+	scg, ok := checksumLookup.(chunks.StrongChecksumGetter)
+	if !ok {
+		log.Println("I deeply misunderstand how the sync code works")
+		return fmt.Errorf("can't convert checksumLookup into a concrete StrongChecksumGetter")
+	}
+	resp.StrongChecksumGetter = scg
 
 	return nil
 }
