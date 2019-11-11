@@ -2,10 +2,11 @@ package client
 
 import (
 	"net/rpc"
-//	"log"
+	"log"
 	"fmt"
 	"crypto/md5"
 	"os"
+	"strings"
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/output"
@@ -95,10 +96,12 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 // to tell the remote that a sequence of transfer commands have completed?
 	err = leapserver.Call("Server.IndexAndBuildChecksumIndex", args, &reply)
 	if err != nil {
+		printCindexOutput(&reply)
 		return fmt.Errorf("Can't get remote to index and transfer because: %v", err)
 		// close? cleanup? retry here?
 	}
 	fileSize := reply.FileSize
+	printCindexOutput(&reply)
 
 //	tell the remote if we can that it should clean up
 //	defer client.Call
@@ -199,4 +202,25 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	return nil
 }
 
+// printCindexOutput dumps the output from the cindex command delivered
+// from the remote system if it exists.
+func printCindexOutput(reply *server.RemoteCheckSumIndexData) {
+	if len(reply.CindexOutput) > 0 {
+		base := string(reply.CindexOutput)
+		split := strings.Split(base, "\n")
+
+		log.Printf("cindex output")
+		p := log.Prefix()
+		log.SetPrefix("server> ")
+		for _, s := range split {
+			log.Println(s)
+		}
+		log.SetPrefix(p)
+
+		// I want to see this even if running with hidden logging mode.
+		for _, s := range split {
+			fmt.Println(s)
+		}
+	}
+}
 
