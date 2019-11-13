@@ -9,6 +9,7 @@ import (
 	"os"
 	"sync"
 	"time"
+	"io"
 
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/index"
@@ -25,7 +26,7 @@ type Server struct {
 	ftime  time.Time
 	config *base.Configuration
 	lock   sync.Mutex
-	indexfile *os.File
+	indexfile io.ReaderAt
 
 	// It's conceivable that I don't need token?
 	token int
@@ -134,36 +135,6 @@ type RemoteCheckSumIndexData struct {
 	ReferenceFileIndex *grsync.ChecksumIndex
 	StrongChecksumGetter  chunks.StrongChecksumGetter
 }
-
-/*
-type not registered...
-chunks.StrongChecksumGetter
-
-
-*ChecksumIndex: 
-	BlockCount, MaxStrongLength, AverageStrongLength, Count: easy and resolved
-	
-
-	weakChecksumLookup:  []map[uint32]StrongChecksumList:  NOT EXPORTED. 
-	// Can resolve by exporting.
-
-
-StrongChecksumList -> []chunks.ChunkChecksum
-
-ChunkChecksum:
-	all fields good.
-
-
-ChecksumLookup: interface. Anything that implements: GetStrongChecksumForBlock
-
-ChecksumLookup -> StrongChecksumGetter -> []ChunkChecksum.
-And a []ChunkChecksum is shippable. See aboves. 
-
-So: 1. must make weakChecksum... shipable. And then can wrap the []ChunkChecksum wiht a
-StrongChecksumGetter.
-
-*/
-
 
 func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs, resp *RemoteCheckSumIndexData) error {
 	if s.token != 0 && s.token != args.Token {
