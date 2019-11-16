@@ -93,7 +93,8 @@ func main() {
 				log.Println("Remote index failed because: ", err)
 			}
 		} else {
-			output, err := index.ReIndex(newconfig, newconfig.Currentproject)
+			// TODO(rjk): I can probably make this prettier.
+			output, err := index.Idx{}.ReIndex(newconfig, newconfig.Currentproject)
 			if err != nil {
 				fmt.Printf("couldn't reindex because: %v\n", err)
 				os.Exit(1)

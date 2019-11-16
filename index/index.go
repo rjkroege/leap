@@ -8,12 +8,14 @@ import (
 	"github.com/rjkroege/leap/base"
 )
 
+type Idx struct{}
+
 // ReIndex runs cindex to reindex the file based on the provided configuration.
 // cindex has to be in the path.
 // TODO(rjk): Validate the args from the client.
 // TODO(rjk): Assume less config state? It's not clear where the args should
 // come from here. 
-func ReIndex(config *base.GlobalConfiguration, currentproject string) ([]byte, error) {
+func (_ Idx) ReIndex(config *base.GlobalConfiguration, currentproject string) ([]byte, error) {
 	log.Printf("Invoked reindex %v %v\n" , config, currentproject)
 	log.Println("currentproject is", currentproject)
 

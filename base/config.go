@@ -129,6 +129,10 @@ func (config *Configuration) GetNewConfiguration() *GlobalConfiguration {
 	return config.newconfig
 }
 
+func (config *Configuration) ClassicConfiguration() *Configuration {
+	return config
+}
+
 // updateConfig makes a new-style configuration out of the old one.
 func updateConfig(oldconfig *Configuration) *GlobalConfiguration {
 	return &GlobalConfiguration{

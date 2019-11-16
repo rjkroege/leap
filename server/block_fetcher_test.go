@@ -15,6 +15,10 @@ func (ra *TestReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 	return len(p), ra.err
 }
 
+func (ra *TestReaderAt) Close() error {
+	return nil
+}
+
 const buffercontents = "hello there i am a buffer"
 
 func TestDoRequestOnServer(t *testing.T) {
