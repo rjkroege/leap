@@ -65,13 +65,14 @@ var token int
 func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	localproject := config.Currentproject
 	localpath := config.Projects[localproject].Indexpath
-	remoteproject := config.Projects[localproject].Remoteproject
 	remotepath := config.Projects[localproject].Remotepath
 	serverAddress := config.Projects[localproject].Host
 
 	// this client thinger is what I want in the implementatino of the
 	// TODO(rjk): BlockSourceRequester needs an implementation of
 	// a leapserver.
+	// TODO(rjk): it would be desirable to pass this in? It can be mocked
+	// that way?
 	leapserver, err := rpc.DialHTTP("tcp", serverAddress+":1234")
 	if err != nil {
 		return err
@@ -88,7 +89,6 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	// much config?
 	args := server.IndexAndBuildChecksumIndexArgs{
 		Token:             token,
-		RemoteProjectName: remoteproject,
 		RemotePath:        remotepath,
 	}
 	var reply server.RemoteCheckSumIndexData

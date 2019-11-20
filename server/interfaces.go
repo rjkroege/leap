@@ -128,7 +128,6 @@ const (
 
 type IndexAndBuildChecksumIndexArgs struct {
 	Token             int
-	RemoteProjectName string
 	RemotePath        string
 }
 

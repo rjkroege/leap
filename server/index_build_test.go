@@ -120,7 +120,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			err: fmt.Errorf("index command requires upgrading config"),
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 				RemotePath:        "foopath",
 			},
 			expectedtoken: 0,
@@ -139,7 +138,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			err: fmt.Errorf("remote index command failed because: can't fork cindex!"),
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 				RemotePath:        "foopath",
 			},
 			expectedtoken: 0,
@@ -159,7 +157,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			err: fmt.Errorf("can't stat remote index foopath because stat foopath: no such file or directory"),
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 				RemotePath:        "foopath",
 			},
 			expectedtoken: 0,
@@ -173,7 +170,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 			},
 			expectedtoken: 0,
 			pretest: func(t *testing.T, tv *testVector) {
@@ -208,7 +204,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 			},
 			expectedtoken: 0,
 			pretest: func(t *testing.T, tv *testVector) {
@@ -246,7 +241,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 			},
 			expectedtoken: 0,
 			err:           fmt.Errorf("can't convert checksumLookup into a concrete StrongChecksumGetter"),
@@ -284,7 +278,6 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
-				RemoteProjectName: "fooproj",
 			},
 			expectedtoken: 1,
 			err:           nil,
