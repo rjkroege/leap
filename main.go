@@ -94,7 +94,7 @@ func main() {
 			}
 		} else {
 			// TODO(rjk): I can probably make this prettier.
-			output, err := index.Idx{}.ReIndex(newconfig, newconfig.Currentproject)
+			output, err := index.Idx{}.ReIndex(newconfig.Projects[newconfig.Currentproject].Remotepath, newconfig.Currentproject)
 			if err != nil {
 				fmt.Printf("couldn't reindex because: %v\n", err)
 				os.Exit(1)

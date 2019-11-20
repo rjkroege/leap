@@ -1,19 +1,19 @@
 package client
 
 import (
-	"log"
 	"fmt"
+	"log"
 	"os"
 )
 
 // replace uses file linking to safely replace dst with src.
 func replace(oldfile, newfile string) error {
 	// 1. Link src to a backup
-	backup := oldfile +  ".backup"
+	backup := oldfile + ".backup"
 	if err := os.Link(oldfile, backup); err != nil {
 		return fmt.Errorf("replace can't backup %s to %s because: %v", oldfile, backup, err)
 	}
-	
+
 	// 2. Remove oldfile now that we've backed it up.
 	if err := os.Remove(oldfile); err != nil {
 		// Best effort to remove backup too.
@@ -21,7 +21,7 @@ func replace(oldfile, newfile string) error {
 			log.Printf("Can't cleanup backup %s because %v\n", backup, err)
 		}
 		return fmt.Errorf("replace can't remove %s because %v", oldfile, err)
-	}	
+	}
 
 	// 3. Put newfile in place of oldfile
 	if err := os.Link(newfile, oldfile); err != nil {
@@ -35,7 +35,7 @@ func replace(oldfile, newfile string) error {
 		}
 		return fmt.Errorf("can't link %s to %s because: %v", oldfile, backup, err)
 	}
-	
+
 	// 4. Cleanup
 	if err := os.Remove(backup); err != nil {
 		return fmt.Errorf("Can't cleanup unnecessary backup %s because %v\n", backup, err)

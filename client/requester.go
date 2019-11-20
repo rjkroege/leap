@@ -1,8 +1,8 @@
 package client
 
 import (
-	"net/rpc"
 	"log"
+	"net/rpc"
 
 	"github.com/rjkroege/leap/server"
 )
@@ -19,7 +19,7 @@ type RpcRequester struct {
 func MakeRpcRequester(s *rpc.Client, token int) *RpcRequester {
 	return &RpcRequester{
 		leapserver: s,
-		token: token,
+		token:      token,
 	}
 }
 
@@ -31,11 +31,11 @@ func (r *RpcRequester) IsFatal(err error) bool {
 // DoRequest is executed by the core of the rsync code to fetch a desired
 // block of the remote file. It's synchronous (BlockSourceBase takes care
 // of dispatching possibly many of these requests.)
-func (r *RpcRequester) DoRequest(startOffset int64, endOffset int64) ( []byte, error) {
+func (r *RpcRequester) DoRequest(startOffset int64, endOffset int64) ([]byte, error) {
 	log.Println("DoRequest got asked")
 	req := server.DoRequestArgs{
 		Start: startOffset,
-		End: endOffset,
+		End:   endOffset,
 		Token: r.token,
 	}
 	var buffy []byte

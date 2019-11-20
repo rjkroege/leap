@@ -28,9 +28,9 @@ type MockIndexer struct {
 	proj   string
 }
 
-func (mi MockIndexer) ReIndex(config *base.GlobalConfiguration, currentproject string) ([]byte, error) {
-	if currentproject != mi.proj {
-		return nil, fmt.Errorf("expected currentproject %s, got %s", mi.proj, currentproject)
+func (mi MockIndexer) ReIndex(indexpath string, args ...string) ([]byte, error) {
+	if indexpath != mi.proj {
+		return nil, fmt.Errorf("expected currentproject %s, got %s", mi.proj, indexpath)
 	}
 	return mi.result, mi.err
 }
@@ -133,7 +133,7 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 				indexer: MockIndexer{
 					result: []byte{},
 					err:    fmt.Errorf("can't fork cindex!"),
-					proj:   "fooproj",
+					proj:   "foopath",
 				},
 			},
 			err: fmt.Errorf("remote index command failed because: can't fork cindex!"),
@@ -152,7 +152,7 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 				indexer: MockIndexer{
 					result: []byte("cindex success!"),
 					err:    nil,
-					proj:   "fooproj",
+					proj:   "foopath",
 				},
 				fs: MockFilesystemPostStatError{},
 			},
@@ -169,12 +169,7 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			server: Server{
 				token:  0,
 				config: MockSuccessConfiguration{},
-				indexer: MockIndexer{
-					result: []byte("cindex success!"),
-					err:    nil,
-					proj:   "fooproj",
-				},
-				fs: MockFilesystemPostStatError{},
+				fs:     MockFilesystemPostStatError{},
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
@@ -191,6 +186,11 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 					t.Fatalf("Can't write data to temp file %s: %v", tv.name, err)
 				}
 				tv.args.RemotePath = fd.Name()
+				tv.server.indexer = MockIndexer{
+					result: []byte("cindex success!"),
+					err:    nil,
+					proj:   fd.Name(),
+				}
 				tv.err = fmt.Errorf("can't open remote index %s because open %s: no such file or directory", fd.Name(), fd.Name())
 				fd.Close()
 			},
@@ -203,13 +203,8 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			server: Server{
 				token:  0,
 				config: MockSuccessConfiguration{},
-				indexer: MockIndexer{
-					result: []byte("cindex success!"),
-					err:    nil,
-					proj:   "fooproj",
-				},
-				fs:    filesystemimpl{},
-				build: MockFailingBuilder{},
+				fs:     filesystemimpl{},
+				build:  MockFailingBuilder{},
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
@@ -226,6 +221,11 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 					t.Fatalf("Can't write data to temp file %s: %v", tv.name, err)
 				}
 				tv.args.RemotePath = fd.Name()
+				tv.server.indexer = MockIndexer{
+					result: []byte("cindex success!"),
+					err:    nil,
+					proj:   fd.Name(),
+				}
 				tv.err = fmt.Errorf("can't compute checksums on %s because bad BuildChecksumIndex", fd.Name())
 				fd.Close()
 			},
@@ -241,13 +241,8 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			server: Server{
 				token:  0,
 				config: MockSuccessConfiguration{},
-				indexer: MockIndexer{
-					result: []byte("cindex success!"),
-					err:    nil,
-					proj:   "fooproj",
-				},
-				fs:    filesystemimpl{},
-				build: MockBadBuildChecksumIndexResults{},
+				fs:     filesystemimpl{},
+				build:  MockBadBuildChecksumIndexResults{},
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
@@ -265,6 +260,11 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 					t.Fatalf("Can't write data to temp file %s: %v", tv.name, err)
 				}
 				tv.args.RemotePath = fd.Name()
+				tv.server.indexer = MockIndexer{
+					result: []byte("cindex success!"),
+					err:    nil,
+					proj:   fd.Name(),
+				}
 				fd.Close()
 			},
 			posttest: func(t *testing.T, tv *testVector) {
@@ -279,13 +279,8 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			server: Server{
 				token:  0,
 				config: MockSuccessConfiguration{},
-				indexer: MockIndexer{
-					result: []byte("cindex success!"),
-					err:    nil,
-					proj:   "fooproj",
-				},
-				fs:    filesystemimpl{},
-				build: builderimpl{},
+				fs:     filesystemimpl{},
+				build:  builderimpl{},
 			},
 			args: IndexAndBuildChecksumIndexArgs{
 				Token:             1,
@@ -333,6 +328,11 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 					t.Fatalf("Can't write data to temp file %s: %v", tv.name, err)
 				}
 				tv.args.RemotePath = fd.Name()
+				tv.server.indexer = MockIndexer{
+					result: []byte("cindex success!"),
+					err:    nil,
+					proj:   fd.Name(),
+				}
 				fd.Close()
 			},
 			posttest: func(t *testing.T, tv *testVector) {

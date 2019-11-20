@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"regexp"
 	"testing"
+
+	"github.com/sanity-io/litter"
 )
 
 func TestChunkInput(t *testing.T) {
@@ -164,24 +166,42 @@ func TestParse(t *testing.T) {
 	}
 
 	a, s, b = Parse("a/")
-	if ea, es, eb := []string{"a/[^/]*$", "a/", "^a[^/]*/", "a[^/]*/", ".*a/.*"}, ":", ""; !reflect.DeepEqual(a, ea) || b != eb || s != es {
-		t.Errorf("got %#v,%#v, %#v, exepcted %v, %v, %v", a, s, b, ea, es, eb)
+	if ea, es, eb := []string{
+		"a/[^/]*$",
+		"a/",
+		"^a[^/]*/",
+		"a[^/]*/[^/]*",
+		".*a/.*",
+	}, ":", ""; !reflect.DeepEqual(a, ea) || b != eb || s != es {
+		t.Errorf("got %v,%v, %v, exepcted %v, %v, %v", litter.Sdump(a), litter.Sdump(s), litter.Sdump(b), litter.Sdump(ea), litter.Sdump(es), litter.Sdump(eb))
 	}
 }
 
 func TestFuzzyMatchers(t *testing.T) {
 	a := fuzzyMatchers("abc")
 	if ea := []string{"abc[^/]*$", "abc", "^abc", "abc", ".*a.*b.*c.*"}; !reflect.DeepEqual(a, ea) {
-		t.Errorf("got %#v, exepcted %#v", a, ea)
+		t.Errorf("got %v, exepcted %v", litter.Sdump(a), litter.Sdump(ea))
 	}
 
 	a = fuzzyMatchers("abc/def")
-	if ea := []string{"abc/def[^/]*$", "abc/def", "^abc[^/]*/def", "abc[^/]*/def", ".*a.*b.*c/d.*e.*f.*"}; !reflect.DeepEqual(a, ea) {
-		t.Errorf("got %#v, exepcted %#v", a, ea)
+	if ea := []string{
+		"abc/def[^/]*$",
+		"abc/def",
+		"^abc[^/]*/def",
+		"abc[^/]*/[^/]*def",
+		".*a.*b.*c/d.*e.*f.*",
+	}; !reflect.DeepEqual(a, ea) {
+		t.Errorf("got %v, exepcted %v", litter.Sdump(a), litter.Sdump(ea))
 	}
 
 	a = fuzzyMatchers("abc/")
-	if ea := []string{"abc/[^/]*$", "abc/", "^abc[^/]*/", "abc[^/]*/", ".*a.*b.*c/.*"}; !reflect.DeepEqual(a, ea) {
-		t.Errorf("got %#v, exepcted %#v", a, ea)
+	if ea := []string{
+		"abc/[^/]*$",
+		"abc/",
+		"^abc[^/]*/",
+		"abc[^/]*/[^/]*",
+		".*a.*b.*c/.*",
+	}; !reflect.DeepEqual(a, ea) {
+		t.Errorf("got %v, exepcted %v", litter.Sdump(a), litter.Sdump(ea))
 	}
 }

@@ -1,11 +1,10 @@
 package index
 
 import (
-	"log"
 	"fmt"
+	"log"
 
 	"github.com/codeskyblue/go-sh"
-	"github.com/rjkroege/leap/base"
 )
 
 type Idx struct{}
@@ -14,17 +13,14 @@ type Idx struct{}
 // cindex has to be in the path.
 // TODO(rjk): Validate the args from the client.
 // TODO(rjk): Assume less config state? It's not clear where the args should
-// come from here. 
-func (_ Idx) ReIndex(config *base.GlobalConfiguration, currentproject string) ([]byte, error) {
-	log.Printf("Invoked reindex %v %v\n" , config, currentproject)
-	log.Println("currentproject is", currentproject)
-
+// come from here.
+func (_ Idx) ReIndex(indexpath string, args ...string) ([]byte, error) {
 	session := sh.NewSession()
-	indexpath := config.Projects[currentproject].Indexpath
 	log.Println("indexpath: ", indexpath)
 	session.SetEnv("CSEARCHINDEX", indexpath)
 
-	output, err := session.Command("cindex").CombinedOutput()
+	// TODO(rjk): insert argument here.
+	output, err := session.Command("cindex", args).CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("can't run cindex because: %v", err)
 	}

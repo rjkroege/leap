@@ -1,10 +1,10 @@
 package client
 
 import (
-	"net/rpc"
-	"log"
-	"fmt"
 	"crypto/md5"
+	"fmt"
+	"log"
+	"net/rpc"
 	"os"
 	"strings"
 
@@ -22,11 +22,10 @@ const (
 	MB = 1024 * 1024
 )
 
-
 // TODO(rjk): Make the port configurable?
 func RemoteInvokeQuery(config *base.Configuration, query server.QueryBundle) ([]output.Entry, error) {
 	serverAddress := config.Hostname
-	client, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
+	client, err := rpc.DialHTTP("tcp", serverAddress+":1234")
 	if err != nil {
 		return nil, err
 	}
@@ -37,23 +36,26 @@ func RemoteInvokeQuery(config *base.Configuration, query server.QueryBundle) ([]
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return reply.Entries, nil
+}
+
+func shutdownimpl(leapserver *rpc.Client) error {
+	var reply string
+	if err := leapserver.Call("Server.Shutdown", "", &reply); err != nil {
+		return err
+	}
+	return nil
 }
 
 func Shutdown(config *base.Configuration) error {
 	serverAddress := config.Hostname
-	client, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
+	client, err := rpc.DialHTTP("tcp", serverAddress+":1234")
 	if err != nil {
 		return err
 	}
 
-	var reply string
-	err = client.Call("Server.Shutdown", "", &reply)
-	if err != nil {
-		return err
-	}
-	return nil
+	return shutdownimpl(client)
 }
 
 var token int
@@ -67,10 +69,10 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	remotepath := config.Projects[localproject].Remotepath
 	serverAddress := config.Projects[localproject].Host
 
-	// this client thinger is what I want in the implementatino of the 
+	// this client thinger is what I want in the implementatino of the
 	// TODO(rjk): BlockSourceRequester needs an implementation of
 	// a leapserver.
-	leapserver, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
+	leapserver, err := rpc.DialHTTP("tcp", serverAddress+":1234")
 	if err != nil {
 		return err
 	}
@@ -85,15 +87,15 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	// this might make config easier? a remote wouldn't need as
 	// much config?
 	args := server.IndexAndBuildChecksumIndexArgs{
-		Token: token,
+		Token:             token,
 		RemoteProjectName: remoteproject,
-		RemotePath: remotepath,
+		RemotePath:        remotepath,
 	}
 	var reply server.RemoteCheckSumIndexData
 
-// there are two kinds of errors from the remote: where it's a connection failure
-// or where the remote has successfully communicated a problem. We want
-// to tell the remote that a sequence of transfer commands have completed?
+	// there are two kinds of errors from the remote: where it's a connection failure
+	// or where the remote has successfully communicated a problem. We want
+	// to tell the remote that a sequence of transfer commands have completed?
 	err = leapserver.Call("Server.IndexAndBuildChecksumIndex", args, &reply)
 	if err != nil {
 		printCindexOutput(&reply)
@@ -103,8 +105,8 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	fileSize := reply.FileSize
 	printCindexOutput(&reply)
 
-//	tell the remote if we can that it should clean up
-//	defer client.Call
+	//	tell the remote if we can that it should clean up
+	//	defer client.Call
 
 	// Compute the size locally (from the remote size)
 	blockCount := fileSize / server.BLOCK_SIZE
@@ -126,17 +128,17 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 		uint64(fs.GetBlockSize()),
 		fs.GetFileSize(),
 	)
-	
+
 	// Construct a BlockSource implementation (the way that blocks are
 	// fetched from the remote.)
 	blocksource := blocksources.NewBlockSourceBase(
 		MakeRpcRequester(leapserver, token),
 		resolver,
-			&filechecksum.HashVerifier{
-				Hash:                md5.New(),
-				BlockSize:           fs.GetBlockSize(),
-				BlockChecksumGetter: fs,
-			},
+		&filechecksum.HashVerifier{
+			Hash:                md5.New(),
+			BlockSize:           fs.GetBlockSize(),
+			BlockChecksumGetter: fs,
+		},
 		32,
 		16*MB,
 	)
@@ -157,7 +159,7 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	defer outputfile.Close()
 
 	// Build a RSync type to control the copying of the file from the remote.
-	rsyncjob := &gosync.RSync  {
+	rsyncjob := &gosync.RSync{
 		// The local file that I want to update.
 		Input: inputfile,
 
@@ -183,14 +185,14 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 
 	// Actually ship files.
 	if err := rsyncjob.Patch(); err != nil {
-  	  return fmt.Errorf("rsync.Patch failed because %v", err)
+		return fmt.Errorf("rsync.Patch failed because %v", err)
 	}
 
 	// TODO(rjk): I presume that this runs the cleanup code?
 	// I'm not sure yet how cleanup is suppose to work.
-//	if err := rsync.Close(); err != nil {
-//		// these might not be fatal?
-//	}
+	//	if err := rsync.Close(); err != nil {
+	//		// these might not be fatal?
+	//	}
 
 	// TODO(rjk): Consider error-checking the close operations.
 	outputfile.Close()
@@ -223,4 +225,3 @@ func printCindexOutput(reply *server.RemoteCheckSumIndexData) {
 		}
 	}
 }
-

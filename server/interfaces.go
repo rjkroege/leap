@@ -67,13 +67,16 @@ func getFileTime(filename string) time.Time {
 	return finfo.ModTime()
 }
 
-func BeginServing(config *base.Configuration) {
-	log.Println("BeginServing: ", *config, *config.GetNewConfiguration())
+// TODO(rjk): This setup assumes that the remote index path is valid.
+// It might not be. I need to both handle the situation that the remote
+// has no index file and/or that it fails. Perhaps BeginServing needs to be
+// written for testability.
+func BeginServing(config Configuration) {
 	// Stash date of the index file that we actually use.
-	ftime := getFileTime(config.Indexpath)
+	ftime := getFileTime(config.ClassicConfiguration().Indexpath)
 
 	// Need to take index path from Configuration.
-	state := &Server{search: search.NewTrigramSearch(config.Indexpath, config.Prefixes), ftime: ftime, config: config, indexer: index.Idx{}, fs: filesystemimpl{}, build: builderimpl{}}
+	state := &Server{search: search.NewTrigramSearch(config.ClassicConfiguration().Indexpath, config.ClassicConfiguration().Prefixes), ftime: ftime, config: config, indexer: index.Idx{}, fs: filesystemimpl{}, build: builderimpl{}}
 
 	// The argument to rpc.Register can be any interface. It's public methods become the
 	// methods available on the server via Go rpc.
@@ -110,7 +113,7 @@ func (t *Server) Leap(query QueryBundle, resultBuffer *QueryResult) error {
 	return err
 }
 
-func (t *Server) Shutdown(ignored string, result *string) error {
+func (t *Server) Shutdown(_ string, result *string) error {
 	log.Println("shutting down...")
 	os.Exit(0)
 	return nil
@@ -138,7 +141,7 @@ type RemoteCheckSumIndexData struct {
 
 // Indexer lets me mock out the interface to the use of cindex.
 type Indexer interface {
-	ReIndex(config *base.GlobalConfiguration, currentproject string) ([]byte, error)
+	ReIndex(indexpath string, args ...string) ([]byte, error)
 }
 
 // filesystem permits replacing os.Stat.
@@ -187,7 +190,7 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	}
 
 	// Re-index..
-	stdout, err := s.indexer.ReIndex(newconfig, args.RemoteProjectName)
+	stdout, err := s.indexer.ReIndex(args.RemotePath)
 	if err != nil {
 		s.token = 0
 		return fmt.Errorf("remote index command failed because: %v", err)
