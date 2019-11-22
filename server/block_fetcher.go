@@ -1,5 +1,9 @@
 package server
 
+import (
+	"fmt"
+)
+
 type DoRequestArgs struct {
 	Start, End int64
 	Token      int
@@ -7,8 +11,9 @@ type DoRequestArgs struct {
 
 // DoRequestOnServer runs on the server and returns the requested blocks.
 func (t *Server) DoRequestOnServer(req DoRequestArgs, resp *[]byte) error {
-	// TODO(rjk): Server needs to contain a indexfile os.ReaderAt
-	// TODO(rjk): validate the provided token here.
+	if t.token == 0 || t.token != req.Token {
+		return fmt.Errorf("token mis-match: new sync before last one is done")
+	}
 
 	e := req.End
 	s := req.Start

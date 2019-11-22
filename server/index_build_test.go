@@ -101,33 +101,21 @@ type testVector struct {
 func TestIndexAndBuildChecksumIndex(t *testing.T) {
 	tests := []testVector{
 		{
-			name: "bad token test",
-			server: Server{
-				token: 2,
-			},
-			err: fmt.Errorf("token mis-match: two syncs in progress?"),
-			args: IndexAndBuildChecksumIndexArgs{
-				Token: 1,
-			},
-			expectedtoken: 2,
-		},
-		{
 			name: "bad config test",
 			server: Server{
-				token:  0,
+				token:  3,
 				config: MockFailedConfiguration{},
 			},
 			err: fmt.Errorf("index command requires upgrading config"),
 			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-				RemotePath:        "foopath",
+				RemotePath: "foopath",
 			},
-			expectedtoken: 0,
+			expectedtoken: 3,
 		},
 		{
 			name: "cindex failed test",
 			server: Server{
-				token:  0,
+				token:  1,
 				config: MockSuccessConfiguration{},
 				indexer: MockIndexer{
 					result: []byte{},
@@ -137,15 +125,14 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			},
 			err: fmt.Errorf("remote index command failed because: can't fork cindex!"),
 			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-				RemotePath:        "foopath",
+				RemotePath: "foopath",
 			},
-			expectedtoken: 0,
+			expectedtoken: 1,
 		},
 		{
 			name: "cindex success but filepath not available",
 			server: Server{
-				token:  0,
+				token:  1,
 				config: MockSuccessConfiguration{},
 				indexer: MockIndexer{
 					result: []byte("cindex success!"),
@@ -156,22 +143,19 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 			},
 			err: fmt.Errorf("can't stat remote index foopath because stat foopath: no such file or directory"),
 			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-				RemotePath:        "foopath",
+				RemotePath: "foopath",
 			},
-			expectedtoken: 0,
+			expectedtoken: 1,
 		},
 		{
 			name: "stat succeeded, open fails",
 			server: Server{
-				token:  0,
+				token:  1,
 				config: MockSuccessConfiguration{},
 				fs:     MockFilesystemPostStatError{},
 			},
-			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-			},
-			expectedtoken: 0,
+			args:          IndexAndBuildChecksumIndexArgs{},
+			expectedtoken: 1,
 			pretest: func(t *testing.T, tv *testVector) {
 				// make a temporary file.
 				fd, err := ioutil.TempFile("", "index_build_test_stat_success")
@@ -197,15 +181,13 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 		{
 			name: "BuildCheckSum fails",
 			server: Server{
-				token:  0,
+				token:  1,
 				config: MockSuccessConfiguration{},
 				fs:     filesystemimpl{},
 				build:  MockFailingBuilder{},
 			},
-			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-			},
-			expectedtoken: 0,
+			args:          IndexAndBuildChecksumIndexArgs{},
+			expectedtoken: 1,
 			pretest: func(t *testing.T, tv *testVector) {
 				// make a temporary file.
 				fd, err := ioutil.TempFile("", "index_build_test_buildchecksum_fails")
@@ -234,15 +216,13 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 		{
 			name: "BuildCheckSum generates invalid results",
 			server: Server{
-				token:  0,
+				token:  1,
 				config: MockSuccessConfiguration{},
 				fs:     filesystemimpl{},
 				build:  MockBadBuildChecksumIndexResults{},
 			},
-			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-			},
-			expectedtoken: 0,
+			args:          IndexAndBuildChecksumIndexArgs{},
+			expectedtoken: 1,
 			err:           fmt.Errorf("can't convert checksumLookup into a concrete StrongChecksumGetter"),
 			pretest: func(t *testing.T, tv *testVector) {
 				// make a temporary file.
@@ -271,15 +251,13 @@ func TestIndexAndBuildChecksumIndex(t *testing.T) {
 		{
 			name: "BuildCheckSum returned correctly",
 			server: Server{
-				token:  0,
+				token:  3,
 				config: MockSuccessConfiguration{},
 				fs:     filesystemimpl{},
 				build:  builderimpl{},
 			},
-			args: IndexAndBuildChecksumIndexArgs{
-				Token:             1,
-			},
-			expectedtoken: 1,
+			args:          IndexAndBuildChecksumIndexArgs{},
+			expectedtoken: 4,
 			err:           nil,
 			got: chunks.StrongChecksumGetter{
 				chunks.ChunkChecksum{

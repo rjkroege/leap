@@ -58,10 +58,6 @@ func Shutdown(config *base.Configuration) error {
 	return shutdownimpl(client)
 }
 
-var token int
-
-// ReIndexAndTransfer uses cindex to index a remote server's code. Then it
-// transfers the index files to the local machine for faster queries.
 func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	localproject := config.Currentproject
 	localpath := config.Projects[localproject].Indexpath
@@ -78,35 +74,29 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 		return err
 	}
 
-	// Token indentifies which ReIndexAndTransfer
-	// TODO(rjk): Think through and document the semantics
-	// for the why of Token.
-	token++
+	return reIndexAndTransferImpl(leapserver, localpath, remotepath)
+}
 
-	// I could specify the file and pathing? In particular,
-	// the server version could have a simpler configuration?
-	// this might make config easier? a remote wouldn't need as
-	// much config?
+// ReIndexAndTransfer uses cindex to index a remote server's code. Then it
+// transfers the index files to the local machine for faster queries.
+// TODO(rjk): The server doesn't need a configuration file. All the
+// necessary paths should be provided as rpc arguments.
+func reIndexAndTransferImpl(leapserver *rpc.Client, localpath, remotepath string) error {
 	args := server.IndexAndBuildChecksumIndexArgs{
-		Token:             token,
-		RemotePath:        remotepath,
+		RemotePath: remotepath,
 	}
 	var reply server.RemoteCheckSumIndexData
 
 	// there are two kinds of errors from the remote: where it's a connection failure
 	// or where the remote has successfully communicated a problem. We want
 	// to tell the remote that a sequence of transfer commands have completed?
-	err = leapserver.Call("Server.IndexAndBuildChecksumIndex", args, &reply)
-	if err != nil {
+	if err := leapserver.Call("Server.IndexAndBuildChecksumIndex", args, &reply); err != nil {
 		printCindexOutput(&reply)
 		return fmt.Errorf("Can't get remote to index and transfer because: %v", err)
 		// close? cleanup? retry here?
 	}
 	fileSize := reply.FileSize
 	printCindexOutput(&reply)
-
-	//	tell the remote if we can that it should clean up
-	//	defer client.Call
 
 	// Compute the size locally (from the remote size)
 	blockCount := fileSize / server.BLOCK_SIZE
@@ -132,7 +122,7 @@ func ReIndexAndTransfer(config *base.GlobalConfiguration) error {
 	// Construct a BlockSource implementation (the way that blocks are
 	// fetched from the remote.)
 	blocksource := blocksources.NewBlockSourceBase(
-		MakeRpcRequester(leapserver, token),
+		MakeRpcRequester(leapserver, reply.Token),
 		resolver,
 		&filechecksum.HashVerifier{
 			Hash:                md5.New(),

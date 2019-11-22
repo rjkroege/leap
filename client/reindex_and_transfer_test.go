@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 
@@ -199,23 +200,71 @@ func TestLaunchAndSayHello(t *testing.T) {
 	}
 }
 
+// binarydiff returns true if a, b are the same bytes or error.
+func fileequal(a, b string) (bool, error) {
+	abs, err := ioutil.ReadFile(a)
+	if err != nil {
+		return false, fmt.Errorf("binarydiff can't open %s: %v", a, err)
+	}
+	bbs, err := ioutil.ReadFile(b)
+	if err != nil {
+		return false, fmt.Errorf("binarydiff can't open %s: %v", b, err)
+	}
+	return reflect.DeepEqual(abs, bbs), nil
+}
+
+const fourfile = `And now,
+for something completely different
+`
+
+func (itd *IntegrationTestDirectory) insertFourFile() error {
+	return ioutil.WriteFile(filepath.Join(itd.remoteindexedpath, "newfourfile"), []byte(fourfile), 0644)
+}
+
 // TestRemoteIndexAndTransfer exercises the full leap remote protocol and validates the result.
 func TestRemoteIndexAndQuery(t *testing.T) {
+	itd := MakeIntegrationTestDirectory(t)
+	defer itd.Cleanup(t)
 
-	// setup remote
-	// ReIndexAndTransfer
+	launchServerProcessHelper(t, "-server", "-remoteindexfile", itd.remoteindexfile)
+	leapserver, err := tryConnecting()
+	if err != nil {
+		t.Fatalf("can't connect to remote: %s", err)
+	}
+	defer shutdownimpl(leapserver)
 
-	// validate that the remote and local index files are the same
+	if err := reIndexAndTransferImpl(leapserver, itd.localindexfile, itd.remoteindexfile); err != nil {
+		t.Errorf("reIndexAndTransferImpl failed: %v", err)
+	}
 
-	// todo (post subsequent stage) make sure that we can search the local index
-	// todo (post subsequent work stage) do an inside-file search
+	// Validate that the remote and local index files are the same
+	switch equal, err := fileequal(itd.localindexfile, itd.remoteindexfile); {
+	case err != nil:
+		t.Errorf("can't compare files %s and %s: %v", itd.localindexfile, itd.remoteindexfile, err)
+	case err == nil && !equal:
+		t.Errorf("files %s and %s weren't equal", itd.localindexfile, itd.remoteindexfile)
+	}
 
-	// mutate indexed content (add a four file)
+	// TODO(rjk): (post subsequent stage) make sure that we can search the local index by filename
+	// TODO(rjk) (post subsequent work stage) do an inside-file search (goes to the remote)
 
-	// ReIndexAndTransfer
-	// validate that the remote and local index files are the same
+	// Mutate indexed content (add a four file)
+	if err := itd.insertFourFile(); err != nil {
+		t.Errorf("can't add more data to 'remote' tree: %v", err)
+	}
 
-	// todo (post subsequent stage) make sure that we can search the local index for the new change
-	// todo (post subsequent work stage) do an inside-file search
+	if err := reIndexAndTransferImpl(leapserver, itd.localindexfile, itd.remoteindexfile); err != nil {
+		t.Errorf("reIndexAndTransferImpl failed: %v", err)
+	}
 
+	// Validate that the remote and local index files are the same
+	switch equal, err := fileequal(itd.localindexfile, itd.remoteindexfile); {
+	case err != nil:
+		t.Errorf("can't compare files %s and %s: %v", itd.localindexfile, itd.remoteindexfile, err)
+	case err == nil && !equal:
+		t.Errorf("files %s and %s weren't equal", itd.localindexfile, itd.remoteindexfile)
+	}
+
+	// TODO(rjk): (post subsequent stage) make sure that we can search the local index by filename
+	// TODO(rjk) (post subsequent work stage) do an inside-file search (goes to the remote)
 }

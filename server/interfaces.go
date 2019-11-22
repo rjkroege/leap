@@ -35,14 +35,13 @@ type ReaderAtCloser interface {
 }
 
 type Server struct {
-	search    output.Generator
-	ftime     time.Time
-	config    Configuration
-	lock      sync.Mutex
-	indexfile ReaderAtCloser
+	search output.Generator
+	ftime  time.Time
+	config Configuration
+	lock   sync.Mutex
 
-	// It's conceivable that I don't need token?
-	token int
+	indexfile ReaderAtCloser
+	token     int
 
 	indexer Indexer
 	fs      filesystem
@@ -127,11 +126,11 @@ const (
 )
 
 type IndexAndBuildChecksumIndexArgs struct {
-	Token             int
-	RemotePath        string
+	RemotePath string
 }
 
 type RemoteCheckSumIndexData struct {
+	Token                int
 	CindexOutput         []byte
 	FileSize             int64
 	ReferenceFileIndex   *grsync.ChecksumIndex
@@ -176,22 +175,16 @@ func (_ builderimpl) BuildChecksumIndex(check *filechecksum.FileChecksumGenerato
 }
 
 func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs, resp *RemoteCheckSumIndexData) error {
-	if s.token != 0 && s.token != args.Token {
-		return fmt.Errorf("token mis-match: two syncs in progress?")
-	}
-	s.token = args.Token
 
 	// Get configuration.
 	newconfig := s.config.GetNewConfiguration()
 	if newconfig == nil {
-		s.token = 0
 		return fmt.Errorf("index command requires upgrading config")
 	}
 
-	// Re-index..
+	// Re-index
 	stdout, err := s.indexer.ReIndex(args.RemotePath)
 	if err != nil {
-		s.token = 0
 		return fmt.Errorf("remote index command failed because: %v", err)
 	}
 	resp.CindexOutput = stdout
@@ -201,7 +194,6 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	indexpath := args.RemotePath
 	fileinfo, err := s.fs.Stat(indexpath)
 	if err != nil {
-		s.token = 0
 		return fmt.Errorf("can't stat remote index %s because %v", indexpath, err)
 	}
 	resp.FileSize = fileinfo.Size()
@@ -209,7 +201,6 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	// Open and stash the open file
 	indexfile, err := os.Open(indexpath)
 	if err != nil {
-		s.token = 0
 		return fmt.Errorf("can't open remote index %s because %v", indexpath, err)
 	}
 	s.indexfile = indexfile
@@ -217,7 +208,6 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	generator := filechecksum.NewFileChecksumGenerator(BLOCK_SIZE)
 	_, referenceFileIndex, checksumLookup, err := s.build.BuildChecksumIndex(generator, indexfile)
 	if err != nil {
-		s.token = 0
 		indexfile.Close()
 		return fmt.Errorf("can't compute checksums on %s because %v", indexpath, err)
 	}
@@ -228,10 +218,10 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	if !ok {
 		log.Println("I deeply misunderstand how the sync code works")
 		indexfile.Close()
-		s.token = 0
 		return fmt.Errorf("can't convert checksumLookup into a concrete StrongChecksumGetter")
 	}
 	resp.StrongChecksumGetter = scg
-
+	s.token += 1
+	resp.Token = s.token
 	return nil
 }

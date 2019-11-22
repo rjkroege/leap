@@ -30,6 +30,7 @@ func TestDoRequestOnServer(t *testing.T) {
 
 	server := &Server{
 		indexfile: file,
+		token:     1,
 	}
 
 	var result []byte
