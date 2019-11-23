@@ -120,16 +120,18 @@ func main() {
 
 	if config.Connect {
 		stime := time.Now()
-		entries, err = client.RemoteInvokeQuery(config, server.QueryBundle{fn, stype, suffix})
+		search := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
+		inremotes, err := client.NewRemoteInternalSearcher(config)
 		if err != nil {
 			log.Fatalln("problem connecting to server: ", err)
 			return
 		}
+		entries, err = search.Query(fn, stype, []string{suffix}, inremotes)
 		log.Printf("query remote %v, %v, %v tool %v", fn, stype, suffix, time.Since(stime))
 	} else {
-		gen := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
+		search := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
 		// TODO(rjk): error check
-		entries, _ = gen.Query(fn, stype, []string{suffix})
+		entries, _ = search.Query(fn, stype, []string{suffix}, search)
 	}
 	output.WriteOut(os.Stdout, entries)
 }

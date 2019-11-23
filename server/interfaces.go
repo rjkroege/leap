@@ -35,10 +35,10 @@ type ReaderAtCloser interface {
 }
 
 type Server struct {
-	search output.Generator
 	ftime  time.Time
 	config Configuration
 	lock   sync.Mutex
+	search *search.Search
 
 	indexfile ReaderAtCloser
 	token     int
@@ -75,6 +75,7 @@ func BeginServing(config Configuration) {
 	ftime := getFileTime(config.ClassicConfiguration().Indexpath)
 
 	// Need to take index path from Configuration.
+	// TODO(rjk): Do we need the prefixes here?
 	state := &Server{search: search.NewTrigramSearch(config.ClassicConfiguration().Indexpath, config.ClassicConfiguration().Prefixes), ftime: ftime, config: config, indexer: index.Idx{}, fs: filesystemimpl{}, build: builderimpl{}}
 
 	// The argument to rpc.Register can be any interface. It's public methods become the
@@ -101,15 +102,6 @@ func (t *Server) checkTimeAndUpdate() {
 		t.ftime = ctime
 		t.search = search.NewTrigramSearch(t.config.ClassicConfiguration().Indexpath, t.config.ClassicConfiguration().Prefixes)
 	}
-}
-
-// Need to parse args myself.
-func (t *Server) Leap(query QueryBundle, resultBuffer *QueryResult) error {
-	t.checkTimeAndUpdate()
-
-	entries, err := t.search.Query(query.Fn, query.Stype, []string{query.Suffix})
-	*resultBuffer = QueryResult{entries}
-	return err
 }
 
 func (t *Server) Shutdown(_ string, result *string) error {
@@ -224,4 +216,20 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	s.token += 1
 	resp.Token = s.token
 	return nil
+}
+
+
+// TODO(rjk): shove this into a separate file
+type ContentSearchResultArgs struct {
+	Fnames []int32
+	Suffix string
+}
+
+type ContentSearchResult struct {
+	Entries []output.Entry
+}
+
+
+func (s *Server) RemoteContentSearchResult(args ContentSearchResultArgs, resp *ContentSearchResult) error {
+	return fmt.Errorf("not implemented yets")
 }

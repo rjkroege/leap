@@ -100,7 +100,7 @@ func searchInFile(re *regexp.Regexp, name string) ([]*inFileMatches, error) {
 	return matches, nil
 }
 
-func multiFile(fnames []uint32, re *regexp.Regexp, ix *trigramSearch) []*inFileMatches {
+func multiFile(fnames []uint32, re *regexp.Regexp, ix *Search) []*inFileMatches {
 	matches := make([]*inFileMatches, 0, MaximumMatches)
 	orderingchans := make([]chan int, len(fnames))
 	resultchan := make(chan []*inFileMatches)

@@ -23,7 +23,7 @@ func bytesliceify(paths []string) [][]byte {
 // Chops off the prefix. Fails if any one path is a prefix of another
 // path. But that's silly. The prefix can come either from the
 // configuration or from the base directories of the index.
-func (ix *trigramSearch) trimmer(fs []byte) []byte {
+func (ix *Search) trimmer(fs []byte) []byte {
 	if ix.trimpaths == nil {
 		// Cache the trimpaths to improve performance (per
 		// profiling data.)
@@ -51,7 +51,7 @@ func extend(base, suffix string) string {
 	return base
 }
 
-func (ix *trigramSearch) filenameResult(fnames []uint32, suffix string) ([]output.Entry, error) {
+func (ix *Search) filenameResult(fnames []uint32, suffix string) ([]output.Entry, error) {
 	// TODO(rjk): Consider a better way to find the pretty sub-name:
 	// such as the shortest unique prefix.
 	oo := make([]output.Entry, 0, MaximumMatches)

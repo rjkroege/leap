@@ -11,14 +11,13 @@ import (
 
 	"github.com/google/codesearch/index"
 	"github.com/google/codesearch/regexp"
-
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/output"
 )
 
 const MaximumMatches = 50
 
-type trigramSearch struct {
+type Search struct {
 	index.Index
 	prefixes  []string
 	trimpaths [][]byte
@@ -27,7 +26,7 @@ type trigramSearch struct {
 // filterFileIndicesForRegexpMatch looks up each file index in the
 // backing cindex store and adds it to the result list if its name
 // matches the filename regexp pattern.
-func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *regexp.Regexp, fnames []uint32) []uint32 {
+func (ix *Search) filterFileIndicesForRegexpMatch(post []uint32, re *regexp.Regexp, fnames []uint32) []uint32 {
 	// This loop could conceivably be over all of the filenames. This could
 	// be large. Keeping the body efficient has large impact.
 	for i := 0; len(fnames) < MaximumMatches && i < len(post); i++ {
@@ -46,7 +45,7 @@ func (ix *trigramSearch) filterFileIndicesForRegexpMatch(post []uint32, re *rege
 
 // reorderMatchByFuzziness reorders the matches to be in increasing order
 // of fuzziness so that best matches appear first.
-func (ix *trigramSearch) reorderMatchByFuzziness(matches []uint32, fnls []string) ([]uint32, error) {
+func (ix *Search) reorderMatchByFuzziness(matches []uint32, fnls []string) ([]uint32, error) {
 	res := make([]*regexp.Regexp, len(fnls))
 	reordered := make([][]uint32, len(res))
 	for i := range res {
@@ -81,11 +80,21 @@ outer:
 // NewTrigramSearch returns a Generator that can search
 // inside of files using index at path and project truncation
 // prefixes.
-func NewTrigramSearch(path string, prefixes []string) output.Generator {
-	return &trigramSearch{*index.Open(path), prefixes, nil}
+func NewTrigramSearch(path string, prefixes []string) *Search {
+	return &Search{*index.Open(path), prefixes, nil}
 }
 
-func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]output.Entry, error) {
+type ContentSearcher interface {
+	ContentSearchResult(fnames []uint32, re *regexp.Regexp, suffix string) ([]output.Entry, error)
+}
+
+// Query searches for the specified fn (file name) patterns and suffix
+// (in content) patterns. The patterns should be arranged in descending
+// order of desirability. Entires satisfying the set of search queries
+// are returned or error. The ContentSearcher implementation will be used
+// to remote searches into the interior of files.
+// TODO(rjk): divide this code into two functions based on suffix?
+func (ix *Search) Query(fnl []string, qtype string, suffixl []string, cs ContentSearcher) ([]output.Entry, error) {
 	suffix := suffixl[0]
 
 	stime := time.Now()
@@ -94,6 +103,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 	// Produce a list of filename, all or content-matches only.
 	var query *index.Query
 	var re *regexp.Regexp
+	pat := ""
 
 	// TODO(rjk): Explore having different (extended) search properties.
 	// In essence, I want to do the search as if the argument is a filename
@@ -111,7 +121,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 		// Chrome is an atypically large use case.
 	} else {
 		// This is a contents search. Warmish-runs take 17ms on Chrome.
-		pat := "(?m)" + suffix
+		pat = "(?m)" + suffix
 		var err error
 		re, err = regexp.Compile(pat)
 		if err != nil {
@@ -154,7 +164,7 @@ func (ix *trigramSearch) Query(fnl []string, qtype string, suffixl []string) ([]
 		// So if the files aren't actually local, we need to send
 		// messages here. This is expensive for content searches
 		// because it looks in each one.
-		return ix.contentSearchResult(fnames, re)
+		return cs.ContentSearchResult(fnames, re, pat)
 	}
 }
 
@@ -192,7 +202,7 @@ func findLongestPrefix(names []string) int {
 // informative visual display by removing unnecessary
 // path components. fn is an absolute path, text before
 // cut should be discarded.
-func (ix *trigramSearch) nicelyTrimPath(fn []byte, cut int) string {
+func (ix *Search) nicelyTrimPath(fn []byte, cut int) string {
 	// Adjust for leading / after cutting.
 	if cut > 0 && fn[cut] == filepath.Separator && cut < len(fn) {
 		cut++
@@ -207,7 +217,7 @@ func (ix *trigramSearch) nicelyTrimPath(fn []byte, cut int) string {
 
 // contentSearchResult actually searches inside the files to confirm the
 // index matches.
-func (ix *trigramSearch) contentSearchResult(fnames []uint32, re *regexp.Regexp) ([]output.Entry, error) {
+func (ix *Search) ContentSearchResult(fnames []uint32, re *regexp.Regexp, _ string) ([]output.Entry, error) {
 	// Search inside the files.
 	matches := multiFile(fnames, re, ix)
 

@@ -25,14 +25,6 @@ type Entry struct {
 	Icon         AlfredIcon `xml:"icon"`
 }
 
-type Generator interface {
-	// Query searches for the specified fn (file name) patterns and
-	// suffix (in content) patterns. The patterns should be arranged
-	// in descending order of desirability. Entires satisfying the set
-	// of search queries are returned or error.
-	Query(fn []string, qtype string, suffix []string) ([]Entry, error)
-}
-
 type items struct {
 	Items []Entry
 }
