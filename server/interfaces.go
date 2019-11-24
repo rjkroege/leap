@@ -217,19 +217,3 @@ func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs,
 	resp.Token = s.token
 	return nil
 }
-
-
-// TODO(rjk): shove this into a separate file
-type ContentSearchResultArgs struct {
-	Fnames []int32
-	Suffix string
-}
-
-type ContentSearchResult struct {
-	Entries []output.Entry
-}
-
-
-func (s *Server) RemoteContentSearchResult(args ContentSearchResultArgs, resp *ContentSearchResult) error {
-	return fmt.Errorf("not implemented yets")
-}
