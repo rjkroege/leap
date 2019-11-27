@@ -230,3 +230,62 @@ func leapIntegrationTestAfterReindex(t *testing.T, leapserver *rpc.Client, itd *
 		},
 	})
 }
+
+
+func leapIntegrationTestAfterShuttingDownServer(t *testing.T, leapserver *rpc.Client, itd *IntegrationTestDirectory) {
+
+	leapIntegrationTestCore(t, leapserver, itd, []querytest{
+		{
+			name:      "file name search for one",
+			files:     []string{"one"},
+			separator: ":",
+			suffix:    []string{""},
+			result: []output.Entry{
+				{
+					XMLName: xml.Name{
+						Space: "",
+						Local: "",
+					},
+					Uid:          filepath.Join(itd.root, "remote/one"),
+					Arg:          filepath.Join(itd.root, "remote/one"),
+					Type:         "file",
+					Valid:        "",
+					AutoComplete: "",
+					Title:        "one",
+					SubTitle:     "remote/one",
+					Icon: output.AlfredIcon{
+						Filename: "",
+						Type:     "",
+					},
+				},
+			},
+		},
+
+		{
+			name:      "file name search for previously missing four",
+			files:     []string{"four"},
+			separator: ":",
+			suffix:    []string{""},
+			result: []output.Entry{
+				{
+					XMLName: xml.Name{
+						Space: "",
+						Local: "",
+					},
+					Uid:          filepath.Join(itd.root, "remote/newfourfile"),
+					Arg:          filepath.Join(itd.root, "remote/newfourfile"),
+					Type:         "file",
+					Valid:        "",
+					AutoComplete: "",
+					Title:        "newfourfile",
+					SubTitle:     "remote/newfourfile",
+					Icon: output.AlfredIcon{
+						Filename: "",
+						Type:     "",
+					},
+				},
+			},
+		},
+
+	})
+}

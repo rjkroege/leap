@@ -267,4 +267,11 @@ func TestRemoteIndexAndQuery(t *testing.T) {
 
 	// Search inside the result.
 	leapIntegrationTestAfterReindex(t, leapserver, itd)
+
+	// I should be able to do name searches afterwards.
+	shutdownimpl(leapserver)
+
+	// Search inside the result.
+	leapIntegrationTestAfterShuttingDownServer(t, leapserver, itd)
+
 }
