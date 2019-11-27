@@ -101,18 +101,6 @@ type testVector struct {
 func TestIndexAndBuildChecksumIndex(t *testing.T) {
 	tests := []testVector{
 		{
-			name: "bad config test",
-			server: Server{
-				token:  3,
-				config: MockFailedConfiguration{},
-			},
-			err: fmt.Errorf("index command requires upgrading config"),
-			args: IndexAndBuildChecksumIndexArgs{
-				RemotePath: "foopath",
-			},
-			expectedtoken: 3,
-		},
-		{
 			name: "cindex failed test",
 			server: Server{
 				token:  1,

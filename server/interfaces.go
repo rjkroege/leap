@@ -17,7 +17,6 @@ import (
 	"github.com/Redundancy/go-sync/indexbuilder"
 	"github.com/rjkroege/leap/base"
 	"github.com/rjkroege/leap/index"
-	"github.com/rjkroege/leap/output"
 	"github.com/rjkroege/leap/search"
 )
 
@@ -48,35 +47,27 @@ type Server struct {
 	build   builder
 }
 
-type QueryBundle struct {
-	Fn     []string
-	Stype  string
-	Suffix string
-}
-
-type QueryResult struct {
-	Entries []output.Entry
-}
-
-func getFileTime(filename string) time.Time {
+func getFileTime(filename string) (time.Time, error) {
 	finfo, err := os.Stat(filename)
 	if err != nil {
-		log.Fatal("couldn't open the index file: ", err)
+		return time.Time{}, fmt.Errorf("couldn't Stat index file: %v", err)
 	}
-	return finfo.ModTime()
+	return finfo.ModTime(), nil
 }
 
-// TODO(rjk): This setup assumes that the remote index path is valid.
-// It might not be. I need to both handle the situation that the remote
-// has no index file and/or that it fails. Perhaps BeginServing needs to be
-// written for testability.
+// Prefixes are used in the server for trimming as part of the
+// implementation of ContentSearchResult. It is conceivable that this is
+// undesirable. It is the case that the prefixes can be passed in as part
+// of each RemoteContentSearchResult RPC invocation. There is no need to
+// persist them as part of the Server object.
 func BeginServing(config Configuration) {
-	// Stash date of the index file that we actually use.
-	ftime := getFileTime(config.ClassicConfiguration().Indexpath)
-
-	// Need to take index path from Configuration.
-	// TODO(rjk): Do we need the prefixes here?
-	state := &Server{search: search.NewTrigramSearch(config.ClassicConfiguration().Indexpath, config.ClassicConfiguration().Prefixes), ftime: ftime, config: config, indexer: index.Idx{}, fs: filesystemimpl{}, build: builderimpl{}}
+	state := &Server{
+		// Do I needz config?
+		config:  config,
+		indexer: index.Idx{},
+		fs:      filesystemimpl{},
+		build:   builderimpl{},
+	}
 
 	// The argument to rpc.Register can be any interface. It's public methods become the
 	// methods available on the server via Go rpc.
@@ -90,18 +81,30 @@ func BeginServing(config Configuration) {
 	http.Serve(l, nil)
 }
 
-func (t *Server) checkTimeAndUpdate() {
+func (t *Server) ensureValidSearchObject(indexname string, prefixes []string) error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 
-	// Compare the date with the stashed one.
-	ctime := getFileTime(t.config.ClassicConfiguration().Indexpath)
-	if t.ftime.Before(ctime) {
-		// Must reload the index file here.
-		// TODO(rjk): this needs to be in a lock?
-		t.ftime = ctime
-		t.search = search.NewTrigramSearch(t.config.ClassicConfiguration().Indexpath, t.config.ClassicConfiguration().Prefixes)
+	// Always get the time of the possibly new indexfile.
+	ntime, err := getFileTime(indexname)
+	if err != nil {
+		return fmt.Errorf("can't stat open indexfile %s: %v", indexname, err)
 	}
+
+	if t.search != nil && t.search.GetName() == indexname && !t.ftime.Before(ntime) {
+		return nil
+	}
+
+	// I have to make a new Search instance. Clean up the old one.
+	if t.indexfile != nil {
+		t.indexfile.Close()
+	}
+	// TODO(rjk): Cleanup. The lack of cleanup here will cause the server
+	// side to leak memory.
+	t.search = search.NewTrigramSearch(indexname, prefixes)
+	t.ftime = ntime
+
+	return nil
 }
 
 func (t *Server) Shutdown(_ string, result *string) error {
@@ -167,13 +170,6 @@ func (_ builderimpl) BuildChecksumIndex(check *filechecksum.FileChecksumGenerato
 }
 
 func (s *Server) IndexAndBuildChecksumIndex(args IndexAndBuildChecksumIndexArgs, resp *RemoteCheckSumIndexData) error {
-
-	// Get configuration.
-	newconfig := s.config.GetNewConfiguration()
-	if newconfig == nil {
-		return fmt.Errorf("index command requires upgrading config")
-	}
-
 	// Re-index
 	stdout, err := s.indexer.ReIndex(args.RemotePath)
 	if err != nil {

@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/rjkroege/leap/base"
-	"github.com/rjkroege/leap/output"
 	// "github.com/rjkroege/leap/search"
 	"github.com/rjkroege/leap/server"
 	//"github.com/codeskyblue/go-sh"
@@ -21,24 +20,6 @@ import (
 const (
 	MB = 1024 * 1024
 )
-
-// TODO(rjk): Make the port configurable?
-func RemoteInvokeQuery(config *base.Configuration, query server.QueryBundle) ([]output.Entry, error) {
-	serverAddress := config.Hostname
-	client, err := rpc.DialHTTP("tcp", serverAddress+":1234")
-	if err != nil {
-		return nil, err
-	}
-
-	// Synchronous call
-	var reply server.QueryResult
-	err = client.Call("Server.Leap", query, &reply)
-	if err != nil {
-		return nil, err
-	}
-
-	return reply.Entries, nil
-}
 
 func shutdownimpl(leapserver *rpc.Client) error {
 	var reply string

@@ -245,8 +245,8 @@ func TestRemoteIndexAndQuery(t *testing.T) {
 		t.Errorf("files %s and %s weren't equal", itd.localindexfile, itd.remoteindexfile)
 	}
 
-	// TODO(rjk): (post subsequent stage) make sure that we can search the local index by filename
-	// TODO(rjk) (post subsequent work stage) do an inside-file search (goes to the remote)
+	// Search inside the result.
+	leapIntegrationTestBeforeReindex(t, leapserver, itd)
 
 	// Mutate indexed content (add a four file)
 	if err := itd.insertFourFile(); err != nil {
@@ -265,6 +265,6 @@ func TestRemoteIndexAndQuery(t *testing.T) {
 		t.Errorf("files %s and %s weren't equal", itd.localindexfile, itd.remoteindexfile)
 	}
 
-	// TODO(rjk): (post subsequent stage) make sure that we can search the local index by filename
-	// TODO(rjk) (post subsequent work stage) do an inside-file search (goes to the remote)
+	// Search inside the result.
+	leapIntegrationTestAfterReindex(t, leapserver, itd)
 }

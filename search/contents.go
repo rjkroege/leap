@@ -18,10 +18,16 @@ import (
 const MaximumMatches = 50
 
 type Search struct {
+	name string
 	index.Index
 	prefixes  []string
 	trimpaths [][]byte
 }
+
+func (ix *Search) GetName() string {
+	return ix.name
+}
+
 
 // filterFileIndicesForRegexpMatch looks up each file index in the
 // backing cindex store and adds it to the result list if its name
@@ -81,7 +87,7 @@ outer:
 // inside of files using index at path and project truncation
 // prefixes.
 func NewTrigramSearch(path string, prefixes []string) *Search {
-	return &Search{*index.Open(path), prefixes, nil}
+	return &Search{path, *index.Open(path), prefixes, nil}
 }
 
 type ContentSearcher interface {
@@ -266,6 +272,7 @@ func (ix *Search) ContentSearchResult(fnames []uint32, re *regexp.Regexp, _ stri
 	return oo, nil
 }
 
+// TODO(rjk): Remove this code?
 func fileCopy(a, b string) error {
 	sFile, err := os.Open(a)
 	if err != nil {
