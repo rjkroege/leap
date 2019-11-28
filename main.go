@@ -118,20 +118,28 @@ func main() {
 
 	var entries []output.Entry
 
-	if config.Connect {
+	if config.Connect && stype != ":" {
 		stime := time.Now()
 		search := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
+		log.Printf("running remote query after NewTrigramSearch %v\n", time.Since(stime))
+		// TODO(rjk): Dialing the remote can be expensive because ssh. I should overlap
+		// the connect with the search of the local index.
 		inremotes, err := client.NewRemoteInternalSearcher(config)
 		if err != nil {
 			log.Fatalln("problem connecting to server: ", err)
 			return
 		}
+		log.Printf("running remote query after NewRemoteInternalSearcher %v\n", time.Since(stime))
 		entries, err = search.Query(fn, stype, []string{suffix}, inremotes)
-		log.Printf("query remote %v, %v, %v tool %v", fn, stype, suffix, time.Since(stime))
+		log.Printf("query remote %v, %v, %v tool %v\n", fn, stype, suffix, time.Since(stime))
 	} else {
+		stime := time.Now()
 		search := search.NewTrigramSearch(config.Indexpath, config.Prefixes)
 		// TODO(rjk): error check
 		entries, _ = search.Query(fn, stype, []string{suffix}, search)
+		log.Printf("query local %v, %v, %v tool %v\n", fn, stype, suffix, time.Since(stime))
 	}
+	stime := time.Now()
 	output.WriteOut(os.Stdout, entries)
+	log.Printf("after query, WriteOut %v\n",  time.Since(stime))
 }

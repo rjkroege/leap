@@ -68,7 +68,7 @@ func (ix *Search) filenameResult(fnames []uint32, suffix string) ([]output.Entry
 			// Makes a temporary string.
 			SubTitle: extend(string(ix.trimmer(name)), suffix),
 
-			Type: "file",
+			Type: "file:skipcheck",
 			Icon: output.AlfredIcon{
 				Filename: determineIconString(sname),
 			},
