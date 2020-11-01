@@ -30,6 +30,8 @@ var (
 	indexcmd    = flag.Bool("index", false, "Connect to the configured server and ask it to re-index the configured path.")
 	decodePlumb = flag.Bool("dp", false,
 		"Decode the single provided path and convert it back into a valid plumb address")
+
+	printcsindex      = flag.Bool("cspath", false, "Print the path needed for CSEARCHINDEX")
 )
 
 func main() {
@@ -64,6 +66,13 @@ func main() {
 			log.Fatal("couldn't read configuration: ", err)
 		}
 		server.BeginServing(config)
+		os.Exit(0)
+	case *printcsindex:
+		config, err := base.GetConfiguration(base.Filepath(*testlog))
+		if err != nil {
+			log.Fatal("couldn't read configuration: ", err)
+		}
+		fmt.Printf(config.Indexpath)
 		os.Exit(0)
 	case *stop:
 		config, err := base.GetConfiguration(base.Filepath(*testlog))
