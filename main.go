@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -80,23 +79,20 @@ func plumbhelper(plumbstring string) error {
 			return fmt.Errorf("plumbhelper acme.New: %v", err)
 		}
 
-		buffy, err := ioutil.ReadFile(fn)
-		if err != nil {
-			return fmt.Errorf("plumbhelper ioutil.ReadFile: %v", err)
-		}
-
-		err = win.Name(fn)
 		if err := win.Name(fn); err != nil {
 			return fmt.Errorf("plumbhelper win.Name: %v", err)
 		}
 
-		if _, err = win.Write("body", buffy); err != nil {
-			return fmt.Errorf("plumbhelper win.Write: %v", err)
+		// Forces Acme/Edwood to load the file specified in Name
+		err = win.Ctl("get")
+		if err := win.Name(fn); err != nil {
+			return fmt.Errorf("plumbhelper win.Ctl get: %v", err)
 		}
+
 		if err := win.Addr(string(addr)); err != nil {
 			return fmt.Errorf("plumbhelper win.Addr: %v", err)
 		}
-		if err := win.Ctl("dot=addr\nclean\nshow\n"); err != nil {
+		if err := win.Ctl("dot=addr\nclean\nshow"); err != nil {
 			return fmt.Errorf("plumbhelper win.Addr: %v", err)
 		}
 		return nil
