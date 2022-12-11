@@ -231,7 +231,6 @@ func leapIntegrationTestAfterReindex(t *testing.T, leapserver *rpc.Client, itd *
 	})
 }
 
-
 func leapIntegrationTestAfterShuttingDownServer(t *testing.T, leapserver *rpc.Client, itd *IntegrationTestDirectory) {
 
 	leapIntegrationTestCore(t, leapserver, itd, []querytest{
@@ -286,6 +285,5 @@ func leapIntegrationTestAfterShuttingDownServer(t *testing.T, leapserver *rpc.Cl
 				},
 			},
 		},
-
 	})
 }

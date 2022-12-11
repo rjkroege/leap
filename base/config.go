@@ -16,7 +16,6 @@ var (
 	useproject = flag.String("useproject", "", "Specify the project to use.")
 )
 
-
 // See package comment for why we have this amusing string.
 const Prefix = "/tmp/.leaping/glenda"
 const SubPrefix = "/tmp/.leaping"
@@ -31,12 +30,12 @@ type Configuration struct {
 
 // The the new types.
 type Project struct {
-	Host      string   `json:"host"`
-	Indexpath string   `json:"indexpath"`
-	Remote    bool     `json:"remote"`
-	Prefixes  []string `json:"prefixes"`
-	Remoteproject string  `json:"remoteproject"`
-	Remotepath string   `json:"remotepath"`
+	Host          string   `json:"host"`
+	Indexpath     string   `json:"indexpath"`
+	Remote        bool     `json:"remote"`
+	Prefixes      []string `json:"prefixes"`
+	Remoteproject string   `json:"remoteproject"`
+	Remotepath    string   `json:"remotepath"`
 }
 
 type GlobalConfiguration struct {
@@ -140,12 +139,12 @@ func updateConfig(oldconfig *Configuration) *GlobalConfiguration {
 		Currentproject: "default",
 		Projects: map[string]*Project{
 			"default": {
-				Host:      oldconfig.Hostname,
-				Indexpath: oldconfig.Indexpath,
-				Remote:    oldconfig.Connect,
-				Prefixes:  oldconfig.Prefixes,
+				Host:          oldconfig.Hostname,
+				Indexpath:     oldconfig.Indexpath,
+				Remote:        oldconfig.Connect,
+				Prefixes:      oldconfig.Prefixes,
 				Remoteproject: "#FIX#",
-				Remotepath: "#FIX#",
+				Remotepath:    "#FIX#",
 			},
 		},
 	}

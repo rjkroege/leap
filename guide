@@ -1,0 +1,5 @@
+Edit X:leap/\+Errors: 1,$d
+X:leap/.*\.go: w
+
+go test ./...
+go build

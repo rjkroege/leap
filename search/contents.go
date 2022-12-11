@@ -28,7 +28,6 @@ func (ix *Search) GetName() string {
 	return ix.name
 }
 
-
 // filterFileIndicesForRegexpMatch looks up each file index in the
 // backing cindex store and adds it to the result list if its name
 // matches the filename regexp pattern.

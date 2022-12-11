@@ -119,7 +119,10 @@ func main() {
 	}
 	flag.Parse()
 	if !*testlog {
-		defer base.LogToTemp()()
+		if err := base.SetupLogging("leap"); err != nil {
+			log.Fatalf("can't setup right logging: %v", err)
+		}
+		defer base.RollLogs("leap")
 	}
 
 	switch {

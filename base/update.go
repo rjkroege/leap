@@ -50,12 +50,12 @@ func (ncc *GlobalConfiguration) updateNewStyleConfiguration(path string, args []
 	if *setproject != "" {
 		if _, ok := ncc.Projects[*setproject]; !ok {
 			ncc.Projects[*setproject] = &Project{
-				Host:      "",
-				Indexpath: "",
-				Remote:    false,
-				Prefixes:  []string{},
+				Host:          "",
+				Indexpath:     "",
+				Remote:        false,
+				Prefixes:      []string{},
 				Remoteproject: "",
-				Remotepath: "",
+				Remotepath:    "",
 			}
 		}
 		ncc.Currentproject = *setproject
