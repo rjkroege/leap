@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/rjkroege/leap/base"
@@ -17,7 +16,7 @@ import (
 	"github.com/rjkroege/leap/server"
 	// Uncomment to turn on profiling.
 	// "github.com/pkg/profile"
-	"9fans.net/go/acme"
+	"github.com/rjkroege/gozen"
 )
 
 // TODO(rjk): It is conceivable that I will want to support having a re-writing
@@ -35,78 +34,6 @@ var (
 
 	printcsindex = flag.Bool("cspath", false, "Print the path needed for CSEARCHINDEX")
 )
-
-// plumbhelper directly opens plumbstring in Acme/Edwood because regular
-// plumb can't handle the paths found in the Go package database.
-// TODO(rjk): I have previously imagined that leap should prioritize
-// searching the open Acme/Edwood files. I can refactor this code
-// appropriately to pull the list of files to implement that
-// functionality.
-func plumbhelper(plumbstring string) error {
-	chunks := strings.Split(plumbstring, ":")
-	if len(chunks) > 2 {
-		return fmt.Errorf("plumbhelper bad plumb address string")
-	}
-	fn := chunks[0]
-	addr := ""
-	if len(chunks) > 1 {
-		addr = chunks[1]
-	}
-	log.Println("plumbhelper", fn, addr)
-
-	// Two choices: we already have the Window open.
-	wins, err := acme.Windows()
-	if err != nil {
-		return fmt.Errorf("plumbhelper acme.Windows")
-	}
-
-	win := (*acme.Win)(nil)
-	for _, wi := range wins {
-		log.Println("wi", wi.Name)
-		if wi.Name == fn {
-			win, err = acme.Open(wi.ID, nil)
-			if err != nil {
-				return fmt.Errorf("plumbhelper acme.Open")
-			}
-			break
-		}
-	}
-
-	if win == nil {
-		log.Println("plumbhelper making a new window")
-		win, err = acme.New()
-		if err != nil {
-			return fmt.Errorf("plumbhelper acme.New: %v", err)
-		}
-
-		if err := win.Name(fn); err != nil {
-			return fmt.Errorf("plumbhelper win.Name: %v", err)
-		}
-
-		// Forces Acme/Edwood to load the file specified in Name
-		err = win.Ctl("get")
-		if err := win.Name(fn); err != nil {
-			return fmt.Errorf("plumbhelper win.Ctl get: %v", err)
-		}
-
-		if err := win.Addr(string(addr)); err != nil {
-			return fmt.Errorf("plumbhelper win.Addr: %v", err)
-		}
-		if err := win.Ctl("dot=addr\nclean\nshow"); err != nil {
-			return fmt.Errorf("plumbhelper win.Addr: %v", err)
-		}
-		return nil
-	}
-
-	if err := win.Addr(string(addr)); err != nil {
-		return fmt.Errorf("plumbhelper win.Addr: %v", err)
-	}
-	if err := win.Ctl("dot=addr\nshow\n"); err != nil {
-		return fmt.Errorf("plumbhelper win.Addr: %v", err)
-	}
-
-	return nil
-}
 
 func main() {
 	// Uncomment to turn on profiling.
@@ -136,7 +63,7 @@ func main() {
 		path := input.EncodedToPlumb(flag.Arg(0))
 		log.Println("output", path)
 		// fmt.Println(path)
-		if err := plumbhelper(path); err != nil {
+		if err := gozen.Editinacme(path); err != nil {
 			log.Fatalf("can't tell Edwood/Acme to open %s: %v", path, err)
 		}
 		os.Exit(0)
